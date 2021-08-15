@@ -157,3 +157,82 @@ function TestBMI3() {
     foo(mark, john);
 }
 TestBMI3();
+
+for (let i = 0; i < 10; ++i) //we use let to be able to change the the variable.
+{
+    console.log(`i is ${i}`);
+}
+let counter = 0; // outside the while loop
+while (counter < 20) {
+    console.log(`counter is ${counter}`);
+    ++counter;
+}
+
+do {
+    console.log(`counter2 is ${counter}`); //this happens! do while loop happen at least once
+} while (counter < 10);
+
+
+console.log("object loops");
+
+const o = {
+    a: 5,
+    b: "d",
+    c: false,
+    d: [1, 2, 3]
+};
+for (let i in o) {
+    console.log(`for in loop: i is ${i} of type ${typeof i}`);
+}
+console.log("array loop");
+const o2 = [5, "d", false, { a: 2 }];
+for (let i in o2) {
+    console.log(`for in loop: i is ${i} of type ${typeof i}`);
+}
+for (let i of o2) {
+    console.log(`for of loop: i is ${i} of type ${typeof i}`);
+}
+
+console.log("nested loop");
+const arr2 = [1, 5, 6];
+const arr3 = ["h", "a", "c"];
+let totalPrints = 0;
+for (let i = 0; i < arr2.length; ++i) {
+    for (let j = arr3.length - 1; j >= 0; --j) {
+        for (let k = i; k < arr2.length; ++k) {
+            console.log(`i is ${i}, j is ${j}, k is ${k} total prints is ${++totalPrints}`);
+        }
+    }
+}
+
+function calcAverageArr(arr) {
+    let sum = 0;
+    for (let i = 0; i < arr.length; ++i) {
+        sum += arr[i];
+    }
+    return sum / arr.length; // be careful from cases of div/0
+}
+
+console.log("avg", calcAverageArr([1, 2, 3]));
+console.log("avg", calcAverageArr([1, 2, 3, 4]));
+console.log("avg", calcAverageArr([]));
+
+function TestTips3() {
+    const calcTip = function (bill) {
+        const calcTipPercentage = bill => {
+            if (bill > 300 || bill < 50) return 0.15;
+            else return 0.2;
+        }
+        return bill * calcTipPercentage(bill);
+    }
+    const bills = [22, 295, 176, 440, 37, 105, 10, 1100, 86, 52];
+    let tips = [];
+    let totals = [];
+
+    for (let i = 0; i < bills.length; ++i) {
+        tips.push(calcTip(bills[i]));
+        totals.push(bills[i] + tips[i]);
+        console.log("iteration", i, bills[i], tips[i], totals[i]);
+    }
+}
+TestTips3();

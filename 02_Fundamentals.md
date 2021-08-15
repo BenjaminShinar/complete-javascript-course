@@ -1,6 +1,6 @@
 ## JavaScript Fundamentals - Part 2
 
-<!-- <details> -->
+<details>
 <summary>
 More introduction about javascript: functions, objects, arrays, loops.
 </summary>
@@ -327,10 +327,87 @@ from the method
 
 ### Loops and Iterations
 
-<!-- <details> -->
+<details>
 <summary>
-summary.
+Repeating statements and accessing elements in the container.
 </summary>
+Like if-else statements, loops are also a control structure.
+
+the for loop works just as any other language. 
+* for loop with index
+* while loop
+* do-while loop
+* for in loop - gets values/properties names in objects,  or index in arrays.
+* for of loop - gets actual values, only in iterables
+* continue statement - jump to the next iteration
+* break statement - stop iteration, exit loop.
+
+the while loop doesn't define an index counter, only a condition, this is for times when we don't know how many repetitions we want, and it's dependent on some condition that can change.
+
+```js
+for (let i= 0;i< 10;++i) //we use let to be able to change the the variable.
+{
+    // so something inside the loop
+}
+const ar =[1,3,4,6,7];
+for (let i = 0; i< ar.length;++i)
+{
+    // do something with ar[i]
+}
+```
+
+the *for in* loops over properties, the *for of* loops over values. can use for in over arrays and objects, but for of only for arrays (actually, for iterables, but later).
+``` js
+const o ={
+    a:5,
+    b:"d",
+    c:false,
+    d:[1,2,3]
+};
+for (let i in o)
+{
+    console.log(`for in loop: i is ${i} of type ${typeof i}`);
+}
+const o2 =[1,3,"5",false];
+for (let i of o2)
+{
+    console.log(`for of loop: i is ${i} of type ${typeof i}`);
+}
+```
+>Do not use for in over an Array if the index order is important.
+>The index order is implementation-dependent, and array values may not be accessed in the order you expect.
+>It is better to use a for loop, a for of loop, or Array.forEach() when the order is important.
+
+#### Looping Backwards and Nested Loops
+
+<details>
+<summary>
+We can nest loops inside loops and use index loops to loop over elements in reverse order.
+</summary>
+
+as expected, we can start from the last element index (length-1) and go to first element by changing the *for(;;)* loop.
+``` js
+const arr =[10,2,37,48,56,61];
+for (let i =arr.length-1;i >=0;--i)
+{
+    //do something with arr[i]
+}
+```
+and we can do loops inside loops, either on different objects or even on the same object!
+``` js
+console.log("nested loop");
+const arr2 = [1, 5, 6];
+const arr3 = ["h", "a", "c"];
+let totalPrints = 0;
+for (let i = 0; i < arr2.length; ++i) {
+    for (let j = arr3.length - 1; j >= 0; --j) {
+        for (let k = i; k < arr2.length; ++k) {
+            console.log(`i is ${i}, j is ${j}, k is ${k} total prints is ${++totalPrints}`);
+        }
+    }
+}
+```
+</details>
 
 #### Coding Challenge 4
 
@@ -349,7 +426,7 @@ Calculate tips with loops!
 > Test data: 22, 295, 176, 440, 37, 105, 10, 1100, 86 and 52
 > Hints: Call ‘calcTip ‘in the loop and use the push method to add values to the tips and totals arrays.
 > Bonus:
-> Bonus: Write a function 'calcAverage' which takes an array called 'arr' as an argument. This function calculates the average of all numbers in the given 
+> Write a function 'calcAverage' which takes an array called 'arr' as an argument. This function calculates the average of all numbers in the given 
 array. This is a difficult challenge (we haven't done this before)! 
 > Here is how to solve it:
 > 1. First, you will need to add up all values in the array. To do the addition, start by creating a variable 'sum' that starts at 0. Then loop over the array using a for loop. In each iteration, add the current value to the 'sum' variable. This way, by the end of the loop, you have all values added together.
@@ -359,6 +436,6 @@ array. This is a difficult challenge (we haven't done this before)!
 > GOOD LUCK
 </details>
 
-<!-- </details> -->
+</details>
 
-<!-- </details> -->
+</details>
