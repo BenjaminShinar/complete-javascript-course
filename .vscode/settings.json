@@ -1,4 +1,10 @@
 {
   "cSpell.words": ["instanceof", "typeof", "unshift"],
-  "cSpell.ignoreWords": ["arrow", "parens", "prettierrc", "smblock"]
+  "cSpell.ignoreWords": [
+    "arrow",
+    "ecmascript",
+    "parens",
+    "prettierrc",
+    "smblock"
+  ]
 }
