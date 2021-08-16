@@ -3,6 +3,9 @@
   "cSpell.ignoreWords": [
     "arrow",
     "ecmascript",
+    "keydown",
+    "keypress",
+    "keyup",
     "parens",
     "prettierrc",
     "smblock"

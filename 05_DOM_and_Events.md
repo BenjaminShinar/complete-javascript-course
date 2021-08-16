@@ -86,6 +86,109 @@ Add the Reset features!
 
 ### Project 2: Modal Window
 
+<details>
+<summary>
+A demo project for a modal window with an overlay and ui.
+</summary>
+
+in this project we will work with classes.
+
+we start by selecting the elements we need and store them as variables.
+we used a css class to hide all the modals that sets the property display to none;
+we use _document.querySelectorAll()_ to get all the elements matching, not just the first one. then we can loop over all elements.
+
+```js
+const one = document.querySelector(".cls");
+const all = document.querySelectorAll(".cls");
+```
+
+</details>
+
+### Working With Classes on The HTML elements
+
+<details>
+<summary>
+We can access and manipulate the classes for html elements, and also the styles
+</summary>
+
+we can now attach an eventListener to each button element. inside our event handler, we remove the hidden class, by accessing the [classList](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList) and removing a class. we can remove multiple class by passing several names separated with commas. additionally, we could access the style property and change it directly, but it's safer to work with classes.
+
+```js
+const modal = document.querySelector(".modal");
+modal.classList.remove("hidden"); //no need for the dot
+modal.style.display = "block";
+```
+
+</details>
+
+### Handling Key Presses
+
+<details>
+<summary>
+Responding to keyboard event.
+</summary>
+
+keyboard events are global events, they don't belong to one element, so we add an eventListener to the document element. we have differnt events of keyboard presses.
+
+- keydown
+- keypress
+- keyup
+
+we will use 'keydown'.we need to capture the correct key. for this we can access the event object. this is passed in the event function.
+
+```js
+document.addEventListener("keydown", function (e) {
+  console.log(`a key ${e.key} was pressed down`);
+});
+```
+
+we can also check for the existence of class inside an element
+
+```js
+const modal = document.querySelector(".modal");
+if (modal.classList.contains("hidden")) {
+  // do something
+}
+```
+
+</details>
+
+### Project 3: Pig Game
+
+<details>
+<summary>
+rolling dices until we reach the required score. we can either keep rolling, hold our points or lose all of our points.
+</summary>
+**//todo:: build a uml like the example.**
+A practice project to reinforce our learning. we have a flow chart to better understand the game. this is a more interesting project.
+
+we look at the base condition of the page and we see that it isn't clear, lets reset everything.
+
+we can select elements with querySelector like we did with classes, but we can also use a specialized function.
+
+```js
+const score1 = document.getElementById("score--1");
+```
+
+this time we also add the css hidden class
+
+```css
+.hidden {
+  display: none;
+}
+```
+
+</details>
+
+### Rolling the Dice
+
+<!-- <details> -->
+<summary>
+Implementing the game logic
+</summary>
+
+<!-- </details> -->
+
 ### Fin
 
 <details>
