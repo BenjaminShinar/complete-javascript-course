@@ -1,6 +1,6 @@
 ## DOM Manipulation and Events Fundamentals.
 
-<!-- <details> -->
+<details>
 <summary>
 Making the language come to life and interact with actual web pages.
 </summary>
@@ -182,15 +182,45 @@ this time we also add the css hidden class
 
 ### Rolling the Dice
 
-<!-- <details> -->
+<details>
 <summary>
 Implementing the game logic
 </summary>
 
-<!-- </details> -->
+generate a dice score, update the photo, check the result and act accordingly.
 
-### Fin
+we use math.random and math.trunc to get a number. we make the dice element no longer be hidden (updating the class list) and change the src attribute.
+we need to keep the score somewhere
+
+</details>
+
+### Switching the Active Player
 
 <details>
+<summary>
+Changing between player 1 and 2.
+</summary>
+we need to know which player is now the active player. use arrays, change displays...
+we have a toggle method that adds / removes classes, if exists remove, if not, add it.
 </details>
-```
+
+### Holding the current score
+
+<details>
+<summary>
+Maintain the score when 'hold' is pressed.
+</summary>
+how to keep the scores across rolls and losses. adding a css winner class. add logic that says the game is still running.
+</details>
+
+### Resetting the Game
+
+<details>
+<summary>
+Resetting the game back to the initial state;
+</summary>
+both the init and the button use the same function.
+array has the .fill() method.
+</details>
+
+</details>
