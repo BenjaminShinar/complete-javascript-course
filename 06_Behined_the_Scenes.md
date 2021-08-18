@@ -1,6 +1,6 @@
 ## How JavaScript Works Behind the Scenes
 
-<!-- <details> -->
+<details>
 <summary>
 Understanding how the language works under the hood.
 </summary>
@@ -205,7 +205,7 @@ function f3() {
 
 when we call f1,we then call f2 and f3, so the call stack is global-f1-f2-f3. however, the scope chain are different f1 can access global, f2 can access f1, but f3 can't access f1 or f2, just the global scope, where it was defined.
 
-#### Summary
+#### Scoping Chain Rules
 
 > - Scoping asks the question _"Where do variables live"_ or _"where can we access a certain variable, and where not"_.
 >
@@ -225,11 +225,348 @@ when we call f1,we then call f2 and f3, so the call stack is global-f1-f2-f3. ho
 >
 > - The scope chain has nothing to do with the order in which functions were called, it does not affect the scope chain at all.
 
+#### Scoping in Practice
+
+Examples in code of scoping rules
+accessing global objects from a function. following the scope-chain. the scope of a variable, is where the variable is accessible. global variables are accessible from anywhere. the lookup chain finds the nearest variable with this name (shadowing).
+
+```js
+function calcAge(birthYear) {
+  const age = 2037 - birthYear;
+  console.log(firstName);
+  //console.log(lastName); // won't work! lastName isn't defined before the first function call
+  return age;
+}
+
+let firstName = "jonas";
+calcAge(1991);
+const LastName = "jonas";
+firstName = "ben";
+calcAge(1992);
+```
+
+variables declared with _var_ don't care about block scoping. functions are block scoped in strict mode, and function scope in non strict mode. we can change and manipulate variables in the parents scopes.
+
 </details>
 
-### fin
+### Variables Environment: Hoisting the TDZ
 
 <details>
+<summary>
+When can we access variables inside the scope. what happens if we break the rules, more pitfalls of var declarations.
+</summary>
+execution context contains:
+
+- [ ] variables environment
+- [x] scope chain (covered already)
+- [ ] _this_ keyword
+
+> - **hoisting:** makes some types of variables accessible/ usable in the code before they are actually declared, "variables lifted to the top of their scope".
+>
+> **BEHIND THE SCENES**
+>
+> **Before execution**, code is scanned for variable decelerations, and for each variable, a new _property_ is created in the _variable environment object_.
+
+this process works differently depending on the kind objects:
+
+| Type                                 |         Hoisted          | Initial Value         | Scope                       |
+| ------------------------------------ | :----------------------: | --------------------- | --------------------------- |
+| **function decelerations**           |           yes            | actual function       | function/block(strict mode) |
+| **_var_ variables**                  |           yes            | undefined             | function                    |
+| **_let_ and _const_ variables**      |           no\*           | \<uninitialized>, TDZ | block                       |
+| **functions expressions and arrows** | (var or let/const rules) |                       |
+
+This means we can use functions before (in top) we actually declared them, and they will work properly. it's as if all functions were written in the top of the scope (which is the block scope in strict mode, function scope otherwise).
+
+var variables are hoisted, so they exist before the declaration in the code with undefined value, but they can be accessed and even modified. it's as if the declaration is split into a deceleration on top of the code, and assignment at the the place it was written.
+
+```js
+function foo{
+// many lines of code
+var x = "some value";
+}
+```
+
+is actually
+
+```js
+function foo{
+var x; // no value; before anything else in function happens
+// many lines of code
+x= "some value";
+}
+```
+
+let and const value are technically hoisted, but not in the same way as functions and var variables, so it's like saying the weren't. they have a value of \<uninitialized>,and belong in somewhere called TDZ(**Temporal Dead Zone**).
+
+function expressions and arrow functions are just variables like any other, so their rules depend on how they were declared, they can use _var_ or _let/const_ rules.
+
+#### The Temporal Dead Zone
+
+the region of the block where a let/const variable is unaccessible, it's defined by the inner interpreter,but we can't access it yet until we reach the point in the code that gives it the value
+
+```js
+const x = 50;
+if (x> 20)
+{
+  console.log(x)
+  const z = 99;
+  const = z -x;
+  const j = 'job';
+  console.log(y);
+}
+```
+
+if we try to access j before the line it's defined on, we get an error: **ReferenceError: Cannot access 'j' before initialization**. if we try to access a variable that isn't declared at all (after doing lookup chain), we get a different error: **ReferenceError: y is not defined**. the hoisting of let/const moves them to the TDZ, and when they are defined in the code then they can be used.
+
+The TDZ was added in ES6, and it helps us avoid errors. it also allows us to use const variables. the reason for hoisting was to allow using functions before declarations, and the _var_ hoisting was a by product.
+
+#### Hoisting and the TDZ in practice
+
+variables hoisting
+
+```js
+console.log(me); // undefined
+console.log(job); // cannot access before initialization
+console.log(year); // cannot access before initialization
+var me = "jonas";
+let job = "teacher";
+const year = 1991;
+```
+
+functions hoisting
+
+```js
+foo1(); // works!
+foo2(); // cannot access before initialization
+foo3(1, 2); // cannot access before initialization
+foo4(1, 2); // foo4 is not a function! it's still undefined!
+function foo1() {} //function deceleration;
+const foo2 = function () {}; // function expression
+const foo3 = (a, b) => {}; // arrow function
+var foo4 = (a, b) => {};
+```
+
+remember that undefined is falsy value? here is a way that var fucks up with us.
+
+```js
+if (!numProducts) deleteShoppingCart(); //var numProducts is undefined, undefined is falsy value, so !false -> true, and the code will run
+var numProducts = 10;
+function deleteShoppingCart() {
+  //
+}
+```
+
+the window object. only in the browser, not on node.js. we can see our properties by accessing window.window._property name_, and this will hold our variables declared with _var_ but not _let/const_.
+
+```js
+var x = 0;
+let y = 2;
+const z = 3;
+```
+
 </details>
 
-<!-- </details> -->
+### The This Keyword
+
+<details>
+<summary>
+a special variable that points to the owner of the execution context
+</summary>
+execution context contains:
+
+- [x] variables environment (covered already)
+- [x] scope chain (covered already)
+- [ ] _this_ keyword
+
+> - **the _this_ keyword/variable**: special variable that is created for every execution context (every function). takes the value of (point to) the "owner" of the function in which the _this_ keyword is used.
+>
+> - _this_ is **not** static, it depends on **how** the function is called, and the value is only assigned when the function **is actually called**.
+
+**method** this = \<object calling the method>
+
+```js
+const jonas = {
+  name: "Jonas",
+  year: 1989,
+  calcAge: function () {
+    return 2037 - this.year; //this is the object
+  },
+};
+jonas.calcAge();
+```
+
+**normal function** this = **undefined** in strict mode, or global/window if not strict mode.
+
+**arrow functions** this = \<this of the surrounding function(lexical this)>. the arrow function doesn't get a unique _this_.
+
+**event listener** this = \<DOM element that the handler is attach to>
+
+the this keyword does not point to the function itself,and also not it's variable environment.
+
+**new, call, apply, bind** = other ways to call functions, we will discuss this later.
+
+#### The This keyword in Practice
+
+```js
+console.log(this); //the global/window object in browser mode.
+function foo() {
+  "use strict";
+  console.log(this); //undefined, strict mode
+}
+foo();
+function foo2() {
+  console.log(this); //global/window, sloppy mode
+}
+foo2();
+const foo3 = () => {
+  //arrow function
+  "use strict";
+  console.log(this); //global/window, strict mode, but we get the this from the surrounding scope
+};
+foo3();
+const person = {
+  fullName: "jonas",
+  y: 1,
+  bar: function () {
+    console.log(this, "y", this.y); //the calling object
+  },
+  bar2: () => {
+    console.log(this); //global this, arrow function
+  },
+};
+person.bar(); // the calling object is person;
+person.bar2();
+const person2 = { fullName: "matilda" };
+person2.bar = person.bar;
+person2.bar(); //the calling object is person2; it doesn't have property y, so the value is undefined
+let bar3 = person.bar;
+bar3(); //the this is again the global object
+```
+
+#### Regular Functions and Arrow Functions
+
+```js
+const j = {
+  a: 1,
+  b: "s",
+  foo1: function () {
+    console.log("foo1", this); //this is the calling object
+  },
+  foo2: () => {
+    console.log("foo2", this); //global this
+  },
+  foo3: function () {
+    const isMillennial = function () {
+      console.log("isMillennial", this); //undefined. it's a regular function call
+    };
+    const self = this;
+    const useSelf = function () {
+      console.log("useSelf", self); //undefined. it's a regular function
+    };
+    const isArrow = () => {
+      console.log("isArrow", this); //the surrounding this, j
+    };
+    isMillennial();
+    useSelf();
+    isArrow();
+  },
+};
+```
+
+we shouldn't use arrow functions as methods.
+if we really want to use the 'this' we can add it to the scope by storing the the 'this' as a variable in the surrounding scope and refer to it. this was done in the past, but today we can use arrow function that use the _this_ from the surrounding scope. Note that we sometimes use the _this_ from the scope sometimes from the calling object.
+
+The arguments keyword is available in any function, it holds all the arguments, even if we didn't define them as parameters!
+
+```js
+function argFoo(a, b, c) {
+  console.log(arguments);
+}
+argFoo(1, 2, 3, 4, 5, "false");
+const argFoo2 = (a, b, c) => {
+  console.log(arguments);
+};
+argFoo2(1, 33, [1, 11]);
+```
+
+in modern javascript we no longer use the arguments keyword.
+
+</details>
+
+### Primitives vs Objects (Reference Types)
+
+<details>
+<summary>
+Primitives are value type and stored on the stack, objects are reference type on the heap. copy by value vs copy by reference, shallow copy with Object.assign(). primitives are actually immutable?
+</summary>
+there is a difference between how primitives are stored in memory vs objects. an example
+
+```js
+let age = 30;
+let oldAge = age;
+age = 31;
+console.log(age, oldAge); //31,30
+const me = { fullName: "jonas", age: 40 };
+const other = me;
+other.age = 27;
+console.log(me, other); //both are the same
+```
+
+primitives:
+
+- Number
+- String
+- Boolean
+- Undefined
+- Null
+- Symbol
+- BigInt
+
+objects:
+
+- Objects literals
+- Arrays
+- Functions
+- and more!
+
+primitives are primitive types, copy by value. objects are copy by reference. primitive types are stored on the stack (the execution type where they are declared), reference types are stored in the heap (the garbage collector!). variables are actually identifiers to memory addresses, when we assign a new value to a primitive, we don't change the value in memory, we add a new address with that value and point our identifer to it.
+
+reference types point to the stack which holds an address on the heap. so if we change a member variable of an object, we actually change the data on the heap, so everybody who uses our same reference from the stack will see the updated value.
+
+**Primitive types are immutable in JavaScript, an assignment is simply creating a new address in memory and point there**
+
+#### Primitives vs Objects in Practices;
+
+```js
+let lastName = "Williams";
+let oldLastName = lastName;
+lastName = "davis";
+console.log(lasName, oldLastName); //different values, primitives
+
+const jessica = {
+  firstName: "Jessica",
+  lastName: "david",
+};
+const married = jessica;
+married.lastName = "Will";
+married.age = 88;
+console.log(married, jessica); //same, objects are reference type,age is now on both
+```
+
+if we really want to copy objects and have them be separate object we use a function called object.Assign() to create a new objects
+
+```js
+const o1 = { a: 1, b: 3, c: "aa", d: [1, 2, 3, 4] };
+const o2 = Object.assign({}, o1); //create new object form the o1 and empty object.
+o2.a = 44;
+console.log(o1, o2); // now a is different
+o1.d.push(205);
+console.log(o1, o2); // but d is still shared? this isn't what we wanted!
+```
+
+the problem is that _Object.assign()_ only works for the first level, it's a shallow copy, and we want a deep copy ( a clone). for a real deep clone, we would use an external library.
+
+</details>
+
+</details>
