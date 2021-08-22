@@ -618,3 +618,304 @@ Using advanced loops, enchanted object literals, and checking if properties exis
 </details>
 
 </details>
+
+### Sets and Maps
+
+<details>
+<summary>
+The Sets and maps built-in types.A set is collections of unique values and a map is a collection of pairs of unique keys and values(not necessarily unique).
+</summary>
+in the past there were only primitives, objects and arrays, not other data structures. but ES6 introduce sets and maps as built-in types.
+
+#### Sets
+
+<details>
+<summary>
+Collection of unique values.
+</summary>
+
+A [Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) is a collection of unique values, which cannot contain duplicate values.
+
+to create a set, we pass the constructor an iterable (usually an array). the elements of the created set are unique, and **the order doesn't matter**. a string is also an iterable, so we can pass a string into a set to get the unique characters.
+
+```js
+const ordersSet = new Set([
+  "pasta",
+  "pizza",
+  "risotto",
+  "pasta",
+  "pizza",
+  "pasta",
+]);
+console.log(ordersSet, ordersSet.size);
+console.log(new Set("hello world!"));
+```
+
+set operations
+
+- _.size_ - the number of elements (like array.Length)
+- _has()_ - checks if the element exists in the set (like .includes)
+- _add()_ - add element to set
+- _delete()_ - remove element from set
+- _clear()_ - delete all elements from set.
+
+a set doesn't support index operations(the square brackets). there is no need to get values out of the set,we either check the existence or iterate over the entire set. because the set is an _iterable_, we can use the _for of loop_ to go over it.
+
+```js
+for (const order of ordersSet) {
+  console.log(order);
+}
+```
+
+one way to use sets is as a way to remove duplicate values from an array (if we really don't care about the order.)
+
+```js
+const staff = ["Waiter", "Chef", "Waiter", "Manager", "Chef", "Waiter"];
+const uniqueStaffSet = new Set(staff);
+const uniqueArray = [...uniqueStaffSet]; //spread operator
+```
+
+arrays are more versatile than sets. but sets have their uses.
+
+</details>
+
+#### Maps
+
+<details>
+<summary>
+Collection of key-value pair, where the key must be unique, but can be of any type.
+</summary>
+
+[Maps](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/map) are more useful than sets,a data structures of key-value pairs, unlike objects, whose key-value pairs must have string keys, maps can have any type of keys, strings, numbers, objects or any other type.
+the map is created with _new Map()_ constructor. then we use _
+set()_ to insert key value pairs, which returns the map, allowing for fluent operations. we retrieve values by calling _.get()_ with the key value.
+
+```js
+const rest = new Map();
+rest.set("keyName", "value");
+rest.set(1, [1, 2, 3]); //key is number, value is array
+rest
+  .set(2, 44)
+  .set(3, { a: "bb" }) // fluent operation
+  .set({ a: "s" },new Set([1, 2, 3, 2, 3]) // legal code, but practically useless,because the key object is unique and we can't reference it again.
+  .set(true, "we are open!")
+  .set(false, "we are closed!")
+  .set("open", 11)
+  .set("close", 23);
+
+console.log(rest.get(true));
+console.log(rest.get(2));
+const time = 21;
+console.log(rest.get(rest.get('open') >time && rest.get('close')>time));
+```
+
+map operations
+
+- _.size_ - number of elements in map
+- _.set(key,value)_ - add key-value pair, fluent interface.
+- _.get(key)_ - retrieve value associated with key
+- _.has(key)_ - check if key exists
+- _.delete(key)_ - remove key-value pair
+- _.clear()_ - remove all elements from map.
+
+a note for using objects and arrays as keys. it's not enough for them to have the same values, they must be the same in memory (hold the same reference).
+
+```js
+const m = new Map();
+m.set([1, 2], "hello");
+console.log(m.has([1, 2])); // false
+const arr = [1, 2, 3];
+m.set(arr, "world");
+console.log(m.has(arr), m.get(arr)); // exits
+```
+
+we can use the map to store elements from the DOM.
+
+##### Maps Iteration
+
+there is another way of populating a map. we pass an array of arrays, each with two elements, representing the key value pair.
+
+```js
+const question = new Map([
+  ["question", "what is best?"],
+  [1, "brown bear"],
+  [2, "black bear"],
+  [3, "bug bear"],
+  ["answer", 3],
+  [true, "you're right!"],
+  [false, "sorry,mistake!"],
+]);
+console.log(map.get("question"));
+```
+
+this structure of array containing arrays of key-value pair is what we get from calling _Object.entries(obj)_, so we can get a map from an object entries, with the properties names as keys.
+
+```js
+const obj = { a: 1, b: 3, c: "ss" };
+const objectProperties = new Map(Object.entries(obj));
+console.log(objectProperties.has("a"));
+```
+
+because maps are also iterables, we can use the _for of loop_
+
+```js
+const question = new Map([
+  ["question", "what is best?"],
+  [1, "brown bear"],
+  [2, "black bear"],
+  [3, "bug bear"],
+  ["answer", 3],
+  [true, "you're right!"],
+  [false, "sorry,mistake!"],
+]);
+for (const [key, value] of question) {
+  if (typeof key === "number") {
+    //strict equality
+    console.log(`key is ${key}, value is ${value}`);
+  }
+}
+const ans = number(prompt("your answer?"));
+console.log(m.get(ans === m.get("answer"))); //equality evaluates to true or false.
+```
+
+to convert a map into an array we can use the spread operator.
+
+```js
+const arr = [...m];
+```
+
+we can call _.entries()_, _.values()_, _.keys()_ on maps, like with arrays, but we get a map iterator object.
+
+</details>
+
+#### Which Data Structure to use?
+
+<details>
+<summary>
+Pros and Cons of each data structure: Array, Objects, Sets, Maps.
+</summary>
+
+> sources of data
+>
+> - **From the program itself:** data written directly in the source code(e.g. status messages)
+> - **From the UI:** data input from the user or data written in DOM (e.g. task in todo app)
+> - **From external sources:** data fetched, like web API (e.g. recipe objects)
+
+data from web api usually comes as a json format. We store the data somewhere
+
+> **TODO: plant uml flow chart**
+> data? -> collection of data -> data structure
+>
+> - Simple List
+>   - arrays or sets
+> - Key-Value pairs
+>   - objects or maps
+
+besides maps and sets, there also exist **WeakMap** and **WeakSet** as built-in data structures. and others that are used, but not built-in.
+
+Arrays are preferred to sets when
+
+- order matters.
+- we want to manipulate data.
+- duplicates are ok.
+
+Sets are preferred to arrays when
+
+- we need unique values only, without duplications.
+- we want high performance.
+- we want to remove duplicates from arrays.
+
+Objects over maps
+
+- the "traditional" key-value data structure
+- easier to access with the _[]_ and _._ notations.
+- when you need to include functions (methods), has the _this_ keyword.
+- when working with json (can later convert to map).
+
+Maps over objects
+
+- better performance.
+- keys can have any data type.
+- easy to iterate.
+- easy to compute size.
+- when all we want is storage.
+
+</details>
+
+#### Coding Challenge 3
+
+<details>
+<summary>
+Using maps and sets.
+</summary>
+
+> Let's continue with our football betting app! This time, we have a map called
+> 'gameEvents' (see below) with a log of the events that happened during the
+> game. The values are the events themselves, and the keys are the minutes in which each event happened (a football game has 90 minutes plus some extra time).
+> Your tasks:
+>
+> 1. Create an array 'events' of the different game events that happened (no
+>    duplicates)
+> 2. After the game has finished, is was found that the yellow card from minute 64 was unfair. So remove this event from the game events log.
+> 3. Compute and log the following string to the console: "An event happened, on average, every 9 minutes" (keep in mind that a game has 90 minutes)
+> 4. Loop over 'gameEvents' and log each element to the console, marking
+>    whether it's in the first half or second half (after 45 min) of the game, like this:
+>    [FIRST HALF] 17: ⚽ GOAL
+>    GOOD LUCK
+
+</details>
+</details>
+
+### Working With Strings
+
+<!-- <details> -->
+<summary>
+
+</summary>
+
+#### Coding Challenge 4
+
+<details>
+<summary>
+
+</summary>
+
+> Write a program that receives a list of variable names written in underscore_case and convert them to camelCase.
+> The input will come from a textarea inserted into the DOM (see code below to
+> insert the elements), and conversion will happen when the button is pressed.
+> Test data (pasted to textarea, including spaces):
+>
+> - underscore_case
+> - first_name
+> - Some_Variable
+> - calculate_AGE
+> - delayed_departure
+>
+> Should produce this output (5 separate console.log outputs):
+>
+> - underscoreCase ✅
+> - firstName ✅✅
+> - someVariable ✅✅✅
+> - calculateAge ✅✅✅✅
+> - delayedDeparture ✅✅✅✅✅
+>
+> Hints:
+>
+> - Remember which character defines a new line in the textarea
+> - The solution only needs to work for a variable made out of 2 words, like a_b
+> - Start without worrying about the ✅. Tackle that only after you have the variable name conversion working,
+>
+> This challenge is difficult on purpose, so start watching the solution in case you're stuck. Then pause and continue!
+>
+> Afterwards, test with your own test data!
+>
+> GOOD LUCK
+>
+> ```js
+> document.body.append(document.createElement("textarea"));
+> document.body.append(document.createElement("button"));
+> ```
+
+</details>
+
+<!-- </details> -->

@@ -335,3 +335,37 @@ function challenge2() {
   console.log(scorers);
 }
 challenge2();
+
+const m = new Map();
+m.set([1, 2], 'hello');
+const mArray = [1, 2];
+console.log(m.has([1, 2]), m.has(mArray)); // false
+m.set(mArray, 'world');
+console.log(m.has(mArray), m.get(mArray)); // exists
+
+function challenge3() {
+  const gameEvents = new Map([
+    [17, '⚽ GOAL'],
+    [36, '� Substitution'],
+    [47, '⚽ GOAL'],
+    [61, '� Substitution'],
+    [64, '� Yellow card'],
+    [69, '� Red card'],
+    [70, '� Substitution'],
+    [72, '� Substitution'],
+    [76, '⚽ GOAL'],
+    [80, '⚽ GOAL'],
+    [92, '� Yellow card'],
+  ]);
+
+  let events = [...new Set(gameEvents.values())];
+  console.log('events', events);
+  gameEvents.delete(64);
+  console.log(
+    `an event happened, on average, every ${90 / gameEvents.size} minutes`
+  );
+  for (const [time, event] of gameEvents) {
+    console.log(`[${time <= 45 ? 'First' : 'Second'} Half] ${time}: ${event}`);
+  }
+}
+challenge3();
