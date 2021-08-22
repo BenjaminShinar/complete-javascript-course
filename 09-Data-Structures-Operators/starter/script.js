@@ -42,8 +42,8 @@ const nested = [[2], 3, 4, [5, 6, 10]]; //nested array
 const [[n1], n2, , [n3, , n4]] = nested;
 console.log(n1, n2, n3, n4); // 2,3,5,10
 
-const { categories, location } = restaurant;
-console.log(categories, location);
+const { categories2, location2 } = restaurant;
+console.log(categories2, location2);
 
 const {
   categories: cats,
@@ -369,3 +369,99 @@ function challenge3() {
   }
 }
 challenge3();
+
+const checkMiddleSeat = function (seat) {
+  //B and E are middle seats
+  const seatLetter = seat.slice(-1);
+  if (new Set(['B', 'E']).has(seatLetter)) {
+    console.log(`seat ${seat} is middle seats`);
+  }
+};
+checkMiddleSeat('11B');
+checkMiddleSeat('11E');
+checkMiddleSeat('12A');
+checkMiddleSeat('11C');
+
+const compareEmail = function (emailCorrect, email) {
+  const fixedEmail = email.toLowerCase().trim();
+  return fixedEmail == emailCorrect;
+};
+
+const email1 = 'hello@jonas.io';
+const email2 = '   hello@Jonas.io \n';
+console.log(compareEmail(email1, email2));
+const announcement =
+  'all passengers come to boarding door 23, boarding door 23!';
+console.log(announcement.replace('door', 'gate')); // only the first is replaced
+console.log(announcement.replace(/door/, 'gate')); // using regular expression replace one.
+console.log(announcement.replace(/door/g, 'gate')); // using regular expression replace all  with global flag.
+console.log([...'11+2+99'.split('+'), 2, 3].join('la')); //split, spread, join
+
+//document.body.append(document.createElement('textarea'));
+//document.body.append(document.createElement('button'));
+
+const challenge4 = function () {
+  const foo = str => {
+    let [firstWord, secondWord] = str.trim().toLowerCase().split('_');
+    return [
+      firstWord,
+      secondWord.replace(secondWord[0], secondWord[0].toUpperCase()),
+    ].join('');
+  };
+
+  console.log(foo('underscore_case   '));
+  console.log(foo('  first_name '));
+  console.log(foo('Some_Variable'));
+  console.log(foo('  calculate_AGE'));
+  console.log(foo('delayed_departure'));
+
+  const fullText = `underscore_case
+first_name
+Some_Variable 
+ calculate_AGE
+delayed_departure   `;
+  console.log(fullText);
+  const fooAll = function (fulltext) {
+    const moddedText = [];
+    for (const [index, text] of fullText.split('\n').entries()) {
+      moddedText.push(foo(text).padEnd(20, ' ') + '✔'.repeat(index + 1));
+    }
+    return moddedText;
+  };
+
+  console.log(fooAll(fooAll));
+  // document.querySelector('button').addEventListener('click', function () {
+  //   console.log('converting!', document.querySelector('textarea').value);
+  //   document.querySelector('textarea').value = fooAll(
+  //     document.querySelector('textarea').value
+  //   ).join('\n');
+  //});
+};
+challenge4();
+
+const practice = function () {
+  console.log(flights);
+  const flightPart = [];
+
+  for (let flight of flights.replace(/_/g, ' ').split('+')) {
+    let [situation, from, to, when] = flight.trim().split(';');
+    let pad = '';
+
+    if (situation.startsWith('Delayed')) {
+      pad = '🔴';
+    }
+
+    flightPart.push(
+      `${pad.padEnd(3)} ${situation.padStart(20)} from ${from
+        .slice(0, 3)
+        .toUpperCase()} to ${to.slice(0, 3).toUpperCase()} (${when.replace(
+        ':',
+        'h'
+      )})`
+    );
+  }
+
+  console.log(flightPart.join('\n'));
+};
+
+practice();

@@ -1,4 +1,4 @@
-## Data Structures, Modern Operators and Strings
+<!-- ## Data Structures, Modern Operators and Strings -->
 
 <summary>
 </summary>
@@ -868,16 +868,78 @@ Using maps and sets.
 
 ### Working With Strings
 
-<!-- <details> -->
+<details>
 <summary>
-
+Working with strings. methods, substrings, basic regex
 </summary>
+
+the [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String) object represents textual values.
+
+```js
+const airline = "TAP Air Portugal";
+const plane = "A320";
+console.log(plane[0]); //indexing- 'A'
+console.log(Number(plant[1])); // 3
+console.log("one two three!".length); // length of string literal
+```
+
+string operations and method - incomplete list
+
+- _.length_ - number of characters
+- _[index]_ - character at index
+- _.indexOf(string)_ - index of first appearance of character/string in string, -1 if not existing
+- _.lastIndexOf(string)_ - index of last appearance of character/string in string, -1 if not existing
+- _.slice(start_index,last_index)_ - get substring, use start_index and optional last_index (exclusive). the length is end minus start index. we can use negative values to start from the ending
+- _.toLowerCase()_ - return a string with all letters as lower case
+- _.toUpperCase()_ - return a string with all letters as upper case
+- _.trim()_ - remove leading white space, trailing white space, and any consecutive white space characters
+- _.trimStart()_ - ES19 - only remove leading white spaces
+- _.trimEnd()_ - ES19 - only remove trailing white spaces
+- _.replace(what, with)_ - replace first appearance of a character/word with the other one.
+- _.includes(substring)_ - does the string include the substring
+- _.startsWith(substring)_ - does the string start with the substring
+- _.endsWith(substring)_ - does the string end with the substring
+- _.split(delimiter)_ - split string into array based on the delimiter substring
+- _.join(delimiter)_ - join an array into one string, with the delimiter between each element
+- _.padStart(final_length, fillCharacter)_ - adds the fillCharacter from to the start of the string until is the required length
+- _.padEnd(final_length, fillCharacter)_ - adds the fillCharacter from to the end of the string until is the required length
+- _.repeat(times)_ - create a string that is same string repeated
+
+don't forget the +1 when slicing from matched space in _.indexOf(' ')_.
+
+even though a string is a primitive, javascript does automatic **boxing** into a **String Object**, which has methods. all string object method return string objects.
+
+we can change the case of a string with _.toLowerCase()_ and _.toUpperCase()_, and remove white space characters with _.trim()_.we can replace both single charmers and complete words with _.replace()_
+
+```js
+const priceGB = "288,97 €"; //hold alt + 0128
+const priceUs = priceGB.replace("€", "$").replace(",", ".");
+```
+
+we can also use regular expressions to replace all, in this case, we drop the quotes from door, and add the /g global flag
+
+```js
+const announcement =
+  "all passengers come to boarding door 23, boarding door 23!";
+console.log(announcement.replace("door", "gate")); // only the first is replaced
+console.log(announcement.replace(/door/g, "gate")); // using regular expression.
+```
+
+in most string operations, we first use the _.toLower()_ method to convert all letters to lower case and then we can safely compare them.
+we can use destructuring together with splitting.
+
+```js
+const [firstName, lastName] = "john smith".split(" ");
+const fullName = ["Mr,", firstName, lastName.toUpperCase()].join(" ");
+```
+
+padding adds characters until the string is some length long. we can pad from the start or the end. we can repeat the same function again and again
 
 #### Coding Challenge 4
 
 <details>
 <summary>
-
+converting snake_cast to camelCase,getting a data from document, splitting and joining with different delimiters, padding all of them to some length
 </summary>
 
 > Write a program that receives a list of variable names written in underscore_case and convert them to camelCase.
@@ -918,4 +980,21 @@ Using maps and sets.
 
 </details>
 
-<!-- </details> -->
+#### String Practice
+
+<details>
+<summary>
+Another practice for string manipulations. Splitting, joining, checking manipulating case,replacing, etc..
+we can also use destructuring.
+</summary>
+
+> transform the big string into something readable
+>
+> ```js
+> const flights =
+>   "_Delayed_Departure;fao93766109;txl2133758440;11:25+_Arrival;bru0943384722;fao93766109;11:45+_Delayed_Arrival;hel7439299980;fao93766109;12:05+_Departure;fao93766109;lis2323639855;12:30";
+> ```
+
+</details>
+
+</details>
