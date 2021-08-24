@@ -358,13 +358,120 @@ Binding events listeners to objects. default parameters, joining strings, using 
 
 </details>
 
-## a
+### Immediately Invoked Function Expressions
+
+<details>
+<summary>
+An anonymous function that runs once and can't be accessed again.
+</summary>
+a function that is used only once and only when it's declared. this is used a lot with *await-async*. we can do this with immediately invoked function expressions.
+
+```js
+(function () {
+  console.log("un callable function");
+});
+(function () {
+  console.log("called once!");
+})();
+() => console.log("never again")();
+```
+
+functions create scopes,and scopes can only access outer scopes,it was once used as a way to protect variables (before we had const\let and block-scopes).
+
+</details>
+
+### Closures
+
+<details>
+<summary>
+A closure is a pattern/feature that maintains the variables of a function even after the function definition is done.
+</summary>
+Closures are considered a complicated topic, but they are actually the summation of the scope-chain and call-stacks and execution contexts ideas. we don't create closures manually, it's just something that happens.
+
+```js
+const secureBooking = function () {
+  let passengerCount = 0;
+  return function () {
+    passengerCount++;
+    console.log(`${passengerCount} passengers`);
+  };
+};
+const booker = secureBooking();
+booker(); //1 passengers
+booker(); //2 passengers
+```
+
+the function objects maintain the variables from when they were defined. the closure contains all the data that was relevant when it was created. every function contains the execution context of when it was created. this is the closure. closures have priority over other scopes.
+
+> - A function always has access to the variable environment(VE) of the execution context in which it was created.
+> - **Closure**: VE attached to the function, exactly as it was at the time and place the function was created.
+
+other ways to describe closures
+
+> - A closure is the closed-over **variable environment** of the execution context **in which the function was created**, even **after** that execution context is gone.
+> - A closure gives a function access to all the variable **of it's parent function**, even **after** that parent function has returns, the function keeps a **reference** to it's outer scope, which **preserves** the scope chain throughout time.
+> - A closure makes sure that a function doesn't lose connection to **variables that existed at the function's birth place**.
+> - A closure is like a **backpack** that a function carries around wherever it goes. This backpack has all the **variables that were present in the environment where the function was created**.
+>   We do **NOT** have to manually create closure, this is a javaScript feature that happens automatically. we can't even access closed-over variables explicitly. a Closure is **NOT** a tangible javaScript object.
+
+we can look at the internal properties of the function object in the console. it's better to do so in the browser so we can navigate it.
+
+```js
+console.dir(booker); // look in the browser, not in the code.
+```
+
+when we see properties with double square brackets like \[\[scopes\]\], it means it's an internal property that we can't access by code.
+
+we don't have to use higher-order functions to see closures in action. in this example we see a closed-over variable that keeps living even after the function
+that created it is gone.
+
+```js
+let f;
+const g = function () {
+  const a = 23;
+  f = function () {
+    console.log(a * 2);
+  };
+};
+const h = function () {
+  const b = 70;
+  f = function () {
+    console.log(b * 2);
+  };
+};
+g();
+f(); //46
+h(); // reassign f.
+f(); // 140
+g();
+f(); //46
+```
+
+a timer is also an example of closure.
+
+```js
+const diff = 5;
+const boardPassengers = function (n, wait) {
+  const perGroup = Math.trunc(n / 3);
+  const diff = n - 3 * perGroup;
+  setTimeout(function () {
+    console.log(
+      `we are now boarding 3 groups of ${perGroup} passengers and additional ${diff}`
+    );
+  }, wait * 1000);
+  console.log(`boarding will start in ${wait} seconds`);
+};
+const perGroup = 5;
+boardPassengers(16, 2);
+```
+
+the perGroup variable and the other arguments are maintained in the closure of the callback function. the closure has priority over the outer scopes, the callback uses the closure variables as it's immediate scope.
 
 #### Coding Challenge 2
 
 <details>
 <summary>
-
+using IIFE and closures to create an event listener.
 </summary>
 
 > This is more of a thinking challenge than a coding challenge
@@ -380,5 +487,7 @@ Binding events listeners to objects. default parameters, joining strings, using 
 >   header.style.color = "red";
 > })();
 > ```
+
+</details>
 
 </details>

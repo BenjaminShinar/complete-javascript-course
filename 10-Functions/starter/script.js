@@ -94,3 +94,48 @@ function challenge1() {
 }
 
 challenge1();
+
+{
+  const [f1, f2] = (function () {
+    let num = 0;
+    const a = x => {
+      num += x;
+      return num;
+    };
+    const b = x => {
+      num -= x;
+      return num;
+    };
+    return [a, b];
+  })();
+  //two function which use the same closure
+  console.log(f1(7));
+  console.log(f2(3));
+  console.dir(f1);
+}
+
+const diff = 5;
+const boardPassengers = function (n, wait) {
+  const perGroup = Math.trunc(n / 3);
+  const diff = n - 3 * perGroup;
+  setTimeout(function () {
+    console.log(
+      `we are now boarding 3 groups of ${perGroup} passengers and additional ${diff}`
+    );
+  }, wait * 1000);
+  console.log(`boarding will start in ${wait} seconds`);
+};
+const perGroup = 5;
+boardPassengers(16, 2);
+
+const challenge2 = function () {
+  (function () {
+    const header = document.querySelector('h1');
+    header.style.color = 'red';
+    header.addEventListener('click', () => {
+      //console.log('changing color');
+      header.style.color = 'blue'; //header is part of the closure
+    });
+  })(); //call this immediately
+};
+challenge2();
