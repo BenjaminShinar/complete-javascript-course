@@ -1,7 +1,12 @@
 {
   "cSpell.words": ["instanceof", "typeof", "unshift"],
   "cSpell.ignoreWords": [
+    "afterbegin",
+    "afterend",
     "arrow",
+    "bankist",
+    "beforebegin",
+    "beforeend",
     "ecmascript",
     "eurowings",
     "iife",

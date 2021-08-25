@@ -202,12 +202,12 @@ Built-in operations on arrays.
 
 methods are functions that are attached to a specific object, like an array. here are a few of the array methods:
 
-- push(element) adds an element to the end of the array, returns the length of the updated array.
-- unshift(element) adds an element to the start of the array, returns the length of the updated array.
-- pop() removes an element from the end of the array, returns the removed element;
-- shift() removes an element from the start of the array, returns the removed element;
-- indexOf(element) returns the index of the element in the array, if the element isn't inside, returns -1.
-- includes(element) returns a boolean value indicating if the elements exists inside the array, uses strict equality. an _ES6_ method.
+- _.push(element)_ adds an element to the end of the array, returns the length of the updated array.
+- _.unshift(element)_ adds an element to the start of the array, returns the length of the updated array.
+- _.pop()_ removes an element from the end of the array, returns the removed element;
+- _.shift()_ removes an element from the start of the array, returns the removed element;
+- _.indexOf(element)_ returns the index of the element in the array, if the element isn't inside, returns -1.
+- _.includes(element)_ returns a boolean value indicating if the elements exists inside the array, uses strict equality. an _ES6_ method.
 
 there are also properties, which are different than methods, they don't change the object, and don't require parentheses.
 
