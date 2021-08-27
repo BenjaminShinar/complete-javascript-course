@@ -28,8 +28,16 @@ let's extend our list of array methods.
 - _.join(delimiter)_ - **creates a string** from the elements of the arrays with the delimiter between them.
 - _.forEach(function)_ - call the function on each of the element of the array. a higherOrder function
 - - _.map(transformingFunc)_ - similar to the _.forEach()_, but the function should return an element, the new values are the elements of the **new array** returned.
-- _.filter(predicate)_ - **returns an array** containing only the elements that fit a criteria that we specify (a _predicate_ function)
+- _.filter(predicate)_ - **returns an array** containing only the elements that fit a criteria that we specify (a _predicate_ function).
 - _.reduce(aggregationFunc,starting accumulator)_ - return a **single value** by applying an aggregate function on all elements.
+- _.find(predicate)_ - finds a **single value** satisfying the condition. similar to _.filter()_, but it doesn't return an array.
+- _.findIndex(predicate)_ - finds the **index** of the first element matching the predicate, used together with _.splice()_ to remove elements.
+- _.some(predicate)_ - return a **boolean value** indicating if _at least one_ of the elements matches the predicate callback function (like _.includes()_ _like c# .any()_)
+- _.every(predicate)_ - return a **boolean value** indicating if _all_ of the elements match the predicate callback function (_like c# .all()_).
+- _.flat(optionalDepth)_ - **returns a new array** with all the element from sub arrays pulled up by some amount. the optionalDepth argument (default 1) allows us to define how many levels we are pulling up **ES19**.
+- _.flatMap()_ - applies a map an each element and than flat the results **returns new array**. **ES19**.
+- _.sort(optionalComparer)_ - **mutates the array**, uses default lexical string ordering or some comparer callback function.
+- _.fill(value,optionalBegin, optionalEnd)_ - makes all the elements be the given value, **mutates the array**. we can pass the begin and exclusive end index.
 
 ```js
 let arr = ["a", "b", "c", "d", "e"];
@@ -351,9 +359,332 @@ Using array transformation methods.
 
 ### The Magic of Chaining Methods
 
+<details>
+<summary>
+chaining methods together, each method uses the previous return value, so we don't introduce as much variables and we create a single pipeline.
+</summary>
+
+we chain operation together, rather than store each element on it's own and in it's own separate line. this is _fluent interface_ style. that's part of the charm of having methods return the object they were called on (or some copy of them). this is like a pipeline of operations. this is another place where we gain from having the third parameter be the array itself
+
+```js
+const totalUSEd = movements
+.filter(mov=> mov>0)
+.map((mov,i,arr)
+{
+  console.log(arr); // here we can see the entire array
+  return mov*eurToUsd;
+})
+.reduce((acc,mov,i,arr)=> acc+mov); //we could use the array and index if we thought there was some problem!
+```
+
+we should be careful of chaining too many operations on large arrays, as it might cause performance issues. we should look at map methods and see if we can combine them together.
+
+it's also a bad practice to chain methods that mutate the underlying array, like _.splice()_ or _.reverse()_.
+
+#### Coding Challenge 3
+
+<details>
+<summary>
+using chaining operations.
+</summary>
+
+> Rewrite the 'calcAverageHumanAge' function from Challenge #2, but this time as an arrow function, and using chaining!
+>
+> Test data:
+>
+> - Data 1: [5, 2, 4, 1, 15, 8, 3]
+> - Data 2: [16, 6, 10, 5, 6, 1, 4]
+>   GOOD LUCK
+
+</details>
+</details>
+
+### The _find_ Method
+
+<details>
+<summary>
+retrieving one element of an array, based on a condition (a callback function).
+</summary>
+
+```js
+const negativeMovement = movements.find((mov) => mov < 0);
+const account = accounts.find((ac) => ac.owner === "Jessica Davis");
+```
+
+a good way to search an array.
+
+we wil use this to implement the Login Functionality in our project. we will use the login form in our html
+
+```html
+<form class="login">
+  <input
+    type="text"
+    placeholder="user"
+    class="login__input login__input--user"
+  />
+  <!-- In practice, use type="password" -->
+  <input
+    type="text"
+    placeholder="PIN"
+    maxlength="4"
+    class="login__input login__input--pin"
+  />
+  <button class="login__btn">&rarr;</button>
+</form>
+```
+
+a button on a form element actually calls the reload as a default behavior, so we need to stop it, we stop it by happening with the event parameter and calling **.preventDefault()** on it.
+
+```js
+btnLogin.addEventListener("click", function (e) {
+  e.preventDefault();
+  console.log("login");
+});
+```
+
+also, hitting the <kbd>Enter</kbd> key on a form field triggers the submit event.
+
+if we match the username and the pin code, we start the login process.
+we can also remove what we changed in the css style.
+we first display the updated welcome message, and then we call all the functions from before, this time with the real account!
+
+we will also want remove focus from the form on the and clear the input field.
+
+```js
+inputLoginUsername.value = inputLoginPin.value = "";
+inputLoginUsername.blur();
+inputLoginPin.blur();
+```
+
+and now we can update the display summary function to use the user interest rate.
+
+</details>
+
+### Implementing Transfers
+
+<details>
+<summary>
+Continuing with our project, lets allow us to move money between users!
+</summary>
+
+lets look at the html
+
+```html
+<!-- OPERATION: TRANSFERS -->
+<div class="operation operation--transfer">
+  <h2>Transfer money</h2>
+  <form class="form form--transfer">
+    <input type="text" class="form__input form__input--to" />
+    <input type="number" class="form__input form__input--amount" />
+    <button class="form__btn form__btn--transfer">&rarr;</button>
+    <label class="form__label">Transfer to</label>
+    <label class="form__label">Amount</label>
+  </form>
+</div>
+```
+
+we again need to prevent the default behavior from firing.
+we find the target account, validate that it exits, verify that the current account can send this money, for this we update our balance function to make our object contain the balance. it works because everything here id pass by reference, so our function can change the original object in memory.
+
+we do some refactoring to stop repeating ourselves.
+
+</details>
+
+### Advanced Array Methods
+
+<details>
+<summary>
+Some extra Array methods
+</summary>
+
+#### The _findIndex_ method
+
+<details>
+<summary>
+The findIndex() method returns the index of the first matching element in our array, or -1 if no element matches.
+</summary>
+we will use this in our project to close an account.
+we check that the details match the currentAccount. we get the index and then remove it with the *.splice()* method.
+</details>
+
+#### _some()_ and _every()_ methods
+
+<details>
+<summary>
+Check if one or all elements match a condition.
+</summary>
+
+just like _.includes()_ checks for the existence of an element with the equality comparison, the _.some()_ checks with the condition. it's like using map and then include. or _.reduce()_ with the **or** operator and the default false value
+the _.every()_ method checks if all elements match the the condition. like using _.reduce()_ and using the **and** operator.
+
+we will use this in our project to request a loan, we can only request a loan if we have a deposit that's at least 10% of this loan amount. we can cheat in our project because we loans count as deposits.
+
+we can also write callback functions as actual function rather than directly written into the method.
+
+</details>
+
+#### _flat()_ and _flatMap()_ methods
+
+<details>
+<summary>
+ES19 methods that pull up elements from inner-nested arrays.
+</summary>
+
+the _.flat()_ method pulls up all elements up by some level, default to level 1, but we can allow the array to pull further.
+
+```js
+const deep1 = [1, 2, 3, [4, 5, [6, 7]], 8];
+console.log(deep1);
+console.log("level 1", deep1.flat()); //[1,2,3,4,5,[6,7],8]
+console.log("level 2", deep1.flat(2)); //[1,2,3,4,5,6,7,8]
+
+const deep2 = [[[1], [2, 3]], [[[4]]]];
+console.log(deep2);
+console.log("level 1", deep2.flat(1)); // [[1],[2,3],[[4]]]
+console.log("level 2", deep2.flat(2)); // [1,2,3,[4]]
+console.log("level 3", deep2.flat(3)); // [1,2,3,4]
+```
+
+we can use it to get all the movements from all the accounts.
+
+```js
+const allMovements = accounts.map((ac) => ac.movements);
+const allMovementFlats = allMovements.flat();
+const total = allMovementFlats.reduce((acc, mv) => acc + mv);
+```
+
+the _.flatMap()_ method is like using _.map()_ on an array and then flattening the results with _.flat(1)_.
+
+```js
+const total = accounts
+  .flatMap((ac) => ac.movements)
+  .reduce(acc, (mv) => acc + mv, 0);
+```
+
+it's supposed to be better for performance.
+
+</details>
+
+</details>
+
+### Sorting Arrays
+
+<details>
+<summary>
+Sorting arrays. default sort is by converting to string and lexical sorting. we can pass a comparer function. it mutates the data.
+</summary>
+
+the sorting method changes the array, it mutates it!
+
+we can use the built-in sort method for the array objects. it uses the string value to sort by default. we can provide a callback function that takes two arguments (the two elements), the callback should return a number:
+negative if the first should come before the second,
+0 if the positions should remain the same (equal),
+positive if the first should come after the second
+t
+
+```js
+const arrayNum = [-1, -10, -20, -150, -25, 100, 90, 999, 1000];
+arrayNum.sort();
+console.log(arrayNum);
+arrayNum.sort((a, b) => a - b); //ascending order
+console.log(arrayNum);
+arrayNum.sort((a, b) => b - a); //descending order
+console.log(arrayNum);
+```
+
+it won't work if we have a mixed type array (numbers and string.)
+let's use it in out project to sort the movements, we add a parameter to out displaying movements method
+
+</details>
+
+### Creating and Filling Arrays
+
+<details>
+<summary>
+Create and fill arrays with code.
+</summary>
+
+we can create an array with the array constructor call. the array is empty, actually.
+we can fill it with with the _.fill()_ method, the _.fill()_ method can be used on existing arrays as well.
+
+```js
+const arr = new Array(7);
+console.log(arr); // 7 empty elements
+arr.fill(9);
+console.log(arr); //all elements are 9
+```
+
+we can use the _Array.From()_ to create an array from an object with the length property and a function that returns our value.
+
+```js
+const arr = Array.from({ length: 8 }, () => 11);
+console.log(arr);
+const arr2 = Array.from({ length: 7 }, (_, index) => index + 1);
+console.log(arr2);
+```
+
+it was introduced in order to create arrays from iterable objects (maps, sets, strings, _document.querySelectorAll()_). this way we can call the _.map()_ method on the returning values.
+
+```js
+const movementsUI = Array.from(document.querySelectorAll(".movements__value"));
+console.log(movementsUI);
+```
+
+</details>
+
+### Which Array Method to Use
+
 <!-- <details> -->
 <summary>
 
 </summary>
 
 <!-- </details> -->
+
+### a
+
+#### Coding Challenge 4
+
+<details>
+<summary>
+sorting arrays? flattening maps?
+</summary>
+
+> Julia and Kate are still studying dogs, and this time they are studying if dogs are eating too much or too little.
+>
+> Eating too much means the dog's current food portion is larger than the recommended portion, and eating too little is the opposite.
+>
+> Eating an okay amount means the dog's current food portion is within a range 10% above and 10% below the recommended portion (see hint).
+>
+> Your tasks:
+>
+> 1. Loop over the 'dogs' array containing dog objects, and for each dog, calculate the recommended food portion and add it to the object as a new property. Do not create a new array, simply loop over the array.
+>    Formula: recommendedFood = weight \* 0.75 \* 28. (The result is in grams of food, and the weight needs to be in kg).
+> 2. Find Sarah's dog and log to the console whether it's eating too much or too little.
+>    Hint: Some dogs have multiple owners, so you first need to find Sarah in the owners array, and so this one is a bit tricky (on purpose).
+> 3. Create an array containing all owners of dogs who eat too much ('ownersEatTooMuch') and an array with all owners of dogs who eat too little('ownersEatTooLittle').
+> 4. Log a string to the console for each array created in 3., like this: "Matilda and Alice and Bob's dogs eat too much!" and "Sarah and John and Michael's dogs eat too little!"
+> 5. Log to the console whether there is any dog eating exactly the amount of food that is recommended (just true or false).
+> 6. Log to the console whether there is any dog eating an okay amount of food (just true or false).
+> 7. Create an array containing the dogs that are eating an okay amount of food (try to reuse the condition used in 6.)
+> 8. Create a shallow copy of the 'dogs' array and sort it by recommended food portion in an ascending order (keep in mind that the portions are inside the array's objects).
+>
+> Hints:
+>
+> - Use many different tools to solve these challenges, you can use the summary lecture to choose between them.
+> - Being within a range 10% above and below the recommended portion means: current > (recommended \* 0.90) && current < (recommended \* 1.10). Basically, the current portion should be between 90% and 110% of the recommended portion.
+>
+> Test data:
+>
+> ```js
+> const dogs = [
+>   { weight: 22, curFood: 250, owners: ["Alice", "Bob"] },
+>   { weight: 8, curFood: 200, owners: ["Matilda"] },
+>   { weight: 13, curFood: 275, owners: ["Sarah", "John"] },
+>   { weight: 32, curFood: 340, owners: ["Michael"] },
+> ];
+> ```
+>
+> GOOD LUCK
+
+</details>
