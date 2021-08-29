@@ -634,14 +634,140 @@ console.log(movementsUI);
 
 ### Which Array Method to Use
 
-<!-- <details> -->
+<details>
 <summary>
-
+Which array method to use in which situation?
 </summary>
 
-<!-- </details> -->
+what is my target?
 
-### a
+1. to mutate the original array
+   - _.push()_, _.unshift()_ - add elements
+   - _.pop()_,_.shift()_, _.splice()_ - remove elements
+   - _.reverse()_, _.sort()_, _.fill()_
+2. a new array
+   - _.map()_ - computed from original
+   - _.filter()_ - filtered by conditions
+   - _.slice()_ - portion of original
+   - _.concat()_ - adding original to other
+   - ._flat()_, _.flatMap()_ - flattening the original
+3. an array index
+   - _.indexOf()_ - index of element
+   - _.findIndex()_ - index by condition
+4. an array element
+   - _.find()_ - based on condition
+5. know if array includes
+   - _.includes()_ - exact value
+   - _.some()_, _.every()_ - by condition
+6. a new string
+   - _.join()_ - make string
+7. to transform to value
+   - _.reduce()_
+8. to just loop
+   - _.forEach()_
+
+#### Additional Practice
+
+<details>
+<summary>
+Extra practice
+</summary>
+
+calculating all deposits sum.
+filter, reduce,maybe flat? we can use _.flatMap()_
+
+```js
+const banDepositSum = accounts
+.map(account => account.movements)
+.flat()
+.filter(mv=> mv > 0)
+.reduce(((acc,mov)=>acc+mov);
+```
+
+counting deposits with at least 1000, we can use length of filtered array or use _.reduce()_ with a counter.
+
+```js
+const numDeposits1000A = account
+  .flatMap((ac) => ac.movements)
+  .filter((mv) => mv >= 1000).length;
+
+const numDeposits1000B = accounts
+  .flatMap((ac) => ac.movements)
+  .reduce((acc, mv) => acc + (mv > 1000), 0);
+
+const numDeposits1000C = accounts
+  .flatMap((ac) => ac.movements)
+  .filter((mv) => mv >= 1000)
+  .reduce((acc) => acc + 1, 0);
+```
+
+a reminder about the difference between prefix and suffix version of _++_ operator
+
+```js
+let a = 10;
+let b = 10;
+
+console.log(++a, b++); //11,10
+console.log(a, b); //11,11
+```
+
+creating an object from the _reduce()_ method.
+we create the object as the accumulator and then mutate it, we must return it because.e it's not a single value statement.
+we can actually take the two values with destructing.
+
+```js
+const sums = accounts
+  .flatMap((ac) => ac.movements)
+  .reduce(
+    (sums, cur) => {
+      if (cur > 0) {
+        sums.deposits += cur;
+      } else {
+        sums.withdrawals += cur;
+      }
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+
+const[deposits,withdrawals] = accounts
+  .flatMap((ac) => ac.movements)
+  .reduce(
+    (sums, cur) => {
+      sum[cur> 0 ? "deposits","withdrawals"]+=cur;
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+```
+
+we can probably use _reduce()_ to replace each method.
+
+covert any string titleCase
+we turn our string to lowercase, split into words, and for each word we either capitalize or not based on whether or not it's inside the list of exceptions. then we join all the words together.
+if we want to ensure the string itself is properly even when the first word is in the exception list, we can capitalize the first letter in the entire string at the end or check the index together with the exertion list
+
+```js
+const convertTitleCase = function (title) {
+  const exceptions = ["a", "an", "And", "the", "but", "or", "on", "in", "with"];
+  const titleCase = title
+    .toLowerCase()
+    .split(" ")
+    .map((word) => {
+      if (exceptions.includes(word)) {
+        return word;
+      }
+      return word[0].toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+
+  return titleCase;
+};
+console.log(convertTitleCase("this is a nice title"));
+console.log(convertTitleCase("and this is a LONG title, and but not too long"));
+```
+
+</details>
 
 #### Coding Challenge 4
 
@@ -687,4 +813,5 @@ sorting arrays? flattening maps?
 >
 > GOOD LUCK
 
+</details>
 </details>

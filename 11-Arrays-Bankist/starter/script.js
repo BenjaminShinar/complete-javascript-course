@@ -253,6 +253,74 @@ btnSort.addEventListener('click', function (e) {
   displayMovements(currentAccount, !sortedMovements);
   sortedMovements = !sortedMovements;
 });
+
+const bankDepositSum = accounts
+  .flatMap(ac => ac.movements)
+  .filter(isDeposit)
+  .reduce((acc, mv) => acc + mv, 0);
+console.log('total deposits is', bankDepositSum);
+console.log(
+  accounts
+    .map(ac => ac.movements)
+    .flat()
+    .filter(isDeposit)
+    .reduce((ac, mv) => ac + mv, 0)
+);
+console.log(
+  'number of 1000+ deposits',
+  accounts.flatMap(ac => ac.movements).filter(mv => mv >= 1000).length,
+  accounts
+    .flatMap(ac => ac.movements)
+    .reduce((acc, mov) => acc + (mov >= 1000), 0)
+);
+
+const sumsA = accounts
+  .flatMap(ac => ac.movements)
+  .reduce(
+    (sums, cur) => {
+      if (cur > 0) {
+        sums.deposits += cur;
+      } else {
+        sums.withdrawals += cur;
+      }
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+
+const sumsB = accounts
+  .flatMap(ac => ac.movements)
+  .reduce(
+    (acc, cur) => {
+      acc[cur > 0 ? 'deposits' : 'withdrawals'] += cur;
+      return acc;
+    },
+    {
+      deposits: 0,
+      withdrawals: 0,
+    }
+  );
+
+console.log(sumsA, sumsB);
+
+const convertTitleCase = function (title) {
+  const exceptions = ['a', 'an', 'the', 'but', 'or', 'on', 'in', 'with'];
+  const titleCase = title
+    .toLowerCase()
+    .split(' ')
+    .map(word => {
+      if (exceptions.includes(word)) {
+        return word;
+      }
+      return word[0].toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+
+  return titleCase;
+};
+console.log(convertTitleCase('this is a nice title'));
+console.log(convertTitleCase('this is a LONG title, and but not too long'));
+
 function learn() {
   const challenge1 = function () {
     const checkDogs = (arr1, arr2) => {
@@ -332,68 +400,6 @@ function learn() {
   }
   challenge3();
 
-  function challenge4() {
-    const dogs = [
-      { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
-      { weight: 8, curFood: 200, owners: ['Matilda'] },
-      { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
-      { weight: 32, curFood: 340, owners: ['Michael'] },
-    ];
-    //1
-    dogs.forEach(function (dog) {
-      dog.recommendedFood = dog.weight ** 0.75 * 28;
-    });
-    console.log(dogs);
-    //2
-    console.log(
-      `Sarah's dog is ${dogs.find(dog => dog.owners.includes('Sarah'))}`
-    );
-    //3
-    const ownersEatTooMuch = dogs
-      .filter(dog => dog.curFood > dog.recommendedFood * 1.1)
-      .map(dog => dog.owners)
-      .reduce((owners, owner) => [owners, ...owner]);
-    const ownersEatTooLittle = dogs
-      .filter(dog => dog.curFood < dog.recommendedFood * 0.9)
-      .map(dog => dog.owners)
-      .reduce((owners, owner) => [owners, ...owner]);
-    //4
-    console.log(`${ownersEatTooMuch.join(' and ')}'s dogs eat too much!`);
-    console.log(`${ownersEatTooLittle.join(' and ')}'s dogs eat too little!`);
-
-    //5
-    console.log(
-      dogs.reduce(
-        (accBool, dog) => accBool || dog.recommendedFood === dog.curFood,
-        false
-      )
-    );
-
-    //6
-    console.log(
-      dogs.reduce(
-        (accBool, dog) =>
-          accBool ||
-          (dog.curFood < dog.recommendedFood * 1.1 &&
-            dog.curFood > dog.recommendedFood * 0.9),
-        false
-      )
-    );
-    //7
-    const okEatingDogs = dogs.filter(
-      dog =>
-        dog.curFood < dog.recommendedFood * 1.1 &&
-        dog.curFood > dog.recommendedFood * 0.9
-    );
-    console.log(okEatingDogs);
-    //8
-    const sortedDogs = dogs
-      .slice()
-      .sort((dogA, dogB) => dogA.recommendedFood - dogB.recommendedFood);
-    console.log(sortedDogs);
-  }
-  challenge4();
-
   const deep1 = [1, 2, 3, [4, 5, [6, 7]], 8];
   console.log(deep1);
   console.log('level 1', deep1.flat()); //[1,2,3,4,5,[6,7],8]
@@ -421,5 +427,82 @@ function learn() {
     document.querySelectorAll('.movements__value')
   );
   console.log(movementsUI);
+
+  function challenge4() {
+    const dogs = [
+      { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+      { weight: 8, curFood: 200, owners: ['Matilda'] },
+      { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
+      { weight: 32, curFood: 340, owners: ['Michael'] },
+    ];
+    //1
+    dogs.forEach(function (dog) {
+      dog.recommendedFood = dog.weight ** 0.75 * 28;
+    });
+    console.log(dogs);
+    //2
+    const sarahDog = dogs.find(dog => dog.owners.includes('Sarah'));
+    console.log("Sarah's dog is", sarahDog);
+    //3
+    const ownersEatTooMuch = dogs
+      .filter(dog => dog.curFood > dog.recommendedFood * 1.1)
+      .flatMap(dog => dog.owners);
+    const ownersEatTooLittle = dogs
+      .filter(dog => dog.curFood < dog.recommendedFood * 0.9)
+      .flatMap(dog => dog.owners);
+
+    //4
+    console.log(`${ownersEatTooMuch.join(' and ')}'s dogs eat too much!`);
+    console.log(`${ownersEatTooLittle.join(' and ')}'s dogs eat too little!`);
+    const { tooMuch, tooLittle, Ok } = dogs.reduce(
+      (acc, dog) => {
+        const ratio = dog.curFood / dog.recommendedFood;
+        const category =
+          ratio > 1.1 ? 'tooMuch' : ratio < 0.9 ? 'tooLittle' : 'Ok';
+        console.log(ratio, category, acc[category]);
+        acc[category] = acc[category].concat(dog.owners.flat());
+        return acc;
+      },
+      { tooMuch: [], tooLittle: [], Ok: [] }
+    );
+    console.log(tooLittle);
+    console.log(
+      `${tooLittle.join(' and ')}'s dogs eat too little!,
+            ${tooMuch.join(' and ')}'s dogs eat too much!
+            ${Ok.join(' and ')}'s dogs eat ok!`
+    );
+
+    //5
+    console.log(
+      dogs.reduce(
+        (accBool, dog) => accBool || dog.recommendedFood === dog.curFood,
+        false
+      ),
+      dogs.some(dog => dog.recommendedFood === dog.curFood)
+    );
+    //6
+    const eatsOk = dog =>
+      dog.curFood < dog.recommendedFood * 1.1 &&
+      dog.curFood > dog.recommendedFood * 0.9;
+    console.log(
+      dogs.reduce(
+        (accBool, dog) =>
+          accBool ||
+          (dog.curFood < dog.recommendedFood * 1.1 &&
+            dog.curFood > dog.recommendedFood * 0.9),
+        false
+      ),
+      dogs.every(eatsOk)
+    );
+    //7
+    const okEatingDogs = dogs.filter(eatsOk);
+    console.log('eating ok dogs', okEatingDogs);
+    //8
+    const sortedDogs = dogs
+      .slice()
+      .sort((dogA, dogB) => dogA.recommendedFood - dogB.recommendedFood);
+    console.log(sortedDogs);
+  }
+  challenge4();
 }
 learn(); //call this to run the methods that aren't part of the projects
