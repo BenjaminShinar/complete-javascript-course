@@ -1,11 +1,13 @@
 ## Numbers,Dates, Intl and Timers
 
+<details>
 <summary>
-
+Working with numbers, dates, internationalizing api and Timers.
 </summary>
 continuing with the Bankist Project.
 
-The [Number global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number), the [Math global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math) and the [Date global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
+The [Number global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number), the [Math global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math), the [Date global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date) and the [international date **(INTL)** global object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl).
+
 Numbers Functions:
 
 - _Number()_ - convert to number.
@@ -224,7 +226,7 @@ console.log(5n / 2n); //2n - big int
 
 ### Working For Dates and Times
 
-<!-- <details> -->
+<details>
 <summary>
 Data types to represent dates and time
 </summary>
@@ -268,11 +270,151 @@ get methods have corresponding set methods.
 
 #### Adding Dates to the Bankist Project
 
-<!-- <details> -->
+<details>
 <summary>
 Putting our new knowledge to use
 </summary>
+each movement has a date.
+adding leading zeros with *.padStart(2,0)*
+we the default string representation of a date is toISOString()
+</details>
 
-<!-- </details> -->
+#### Operations With Dates
 
-<!-- </details> -->
+<details>
+<summary>
+We can use the Timestamp and basic maths to get simple date calculations.
+</summary>
+we can do all sorts of operations with date objects. like getting the difference in days, months, etc.. this all works because of the time stamp;
+
+```js
+const dayFuture = new Date(2037, 10, 19, 19, 15, 23);
+const nowTime = Date.now();
+const daysPassed = (date1, date2) =>
+  Math.abs(date2 - date1) / (1000 * 60 * 60 * 24);
+console.log(daysPassed(nowTime, dayFuture));
+```
+
+if we want accurate differences, accounting for timezones, leap years and leap seconds, daylight saving and other stuff, we should use a dedicated library like ~~[Moment](https://momentjs.com/)~~ (**which has reached END OF LIFE**) or a different library.
+
+we will use this in our project to display recent dates.
+
+</details>
+
+</details>
+
+### Internationalizing with **INTL**
+
+<details>
+<summary>
+A new data type representing international rules. we first use it for dates, but can be used for other stuff.
+</summary>
+an api for showing dates according for different locale rules.
+we create a formatter with a locale and then pass it a Date object to the *.format()* method. we can get out locale via the navigator global object and the *.language* property.
+
+we can further customize the output by supplying an options object. which we can there specify how we want our date to be formatted.
+
+[Language codes](http://www.lingoes.net/en/translator/langcode.htm)
+
+[CheatSheet](https://devhints.io/wip/intl-datetime)
+
+```js
+console.log(navigator.language);
+const now = new Date();
+
+console.log("International Time");
+let options = {};
+const formatterUS = new Intl.DateTimeFormat("en-us", options);
+const formatterUk = new Intl.DateTimeFormat("en-uk", options);
+console.log(formatterUS.format(now), formatterUk.format(now));
+options = {
+  hour: "numeric",
+  minute: "numeric",
+  day: "numeric",
+  month: "long",
+  year: "2-digit",
+  weekday: "long",
+};
+const formatterUk2 = new Intl.DateTimeFormat("en-uk", options);
+console.log(formatterUk.format(now), formatterUk2.format(now));
+```
+
+#### internationalizing Numbers
+
+<details>
+<summary>
+We can also use the Intl to create number formatters.
+</summary>
+
+different languages separate between the fraction parts of a number in different ways,and not all counties use a comma between each three digits, we can get the rules for each locale.
+we can also pass an options objects, and say that this number is for some sort of unit
+
+```js
+const o = {
+  style: "currency", //,unit, percent,currency
+  //unit: "mile-per-hour",
+  currency: "EUR",
+  //useGrouping: false, //stop showing delimiters
+};
+const usNumberFormatters = new Intl.NumberFormat("en-us", o); // comma between thousands, dot for fractions, "mph"
+const germanNumberFormatters = new Intl.NumberFormat("de-gr", o); // dot between thousands, comma for fractions, "mi/h"
+const num = 3884764.55;
+console.log(usNumberFormatters.format(num), germanNumberFormatters.format(num));
+```
+
+we will use this to show currency in out project, but without covering for the exchange rate.
+
+</details>
+
+</details>
+
+### Timers
+
+<details>
+<summary>
+Function that happen after some time or happen on set intervals.
+</summary>
+creating a timer that will call a code (callback function) in the future. we pass the callback function and the time delay.
+this is registered and added to the call_stack chain, and will work with the eventloop.
+this is part of asynchronous loop
+
+```js
+setTimeout(function () {
+  console.log("callback");
+}, 3000);
+```
+
+if we want to pass arguments, we add them after the delay. in any case, the timer has the local scope.
+
+```js
+setTimeout(
+  function (a) {
+    console.log(`callback ${a}`);
+  },
+  5000,
+  [1, 12, 13]
+);
+```
+
+we can cancel the callback function with the function _clearTimeout(timer)_, that takes the timer objects
+
+```js
+const timer = setTimeout(() => {}, 10000);
+clearTimeout(timer);
+```
+
+let's add this to our project, and give some delay to the loan functionality.
+
+if we want to run the callback function at an interval, we can use setInterval, which runs the function several times, until stopped (clear interval).
+
+```js
+const clock = setInterval(function () {
+  console.log(Date.now);
+}, 1000);
+```
+
+we will use this to add timeout countdown that logs the user out.
+but if we switch between users, we also need to stop the timeout, otherwise both timeout are running.
+
+</details>
+</details>

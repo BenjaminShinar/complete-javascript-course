@@ -1,5 +1,6 @@
 ## Revisiting Functions
 
+<details>
 <summary>
 Advanced topics about functions: higher order functions, binding, closures.
 </summary>
@@ -487,6 +488,8 @@ using IIFE and closures to create an event listener.
 >   header.style.color = "red";
 > })();
 > ```
+
+</details>
 
 </details>
 

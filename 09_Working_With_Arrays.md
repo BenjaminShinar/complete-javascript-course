@@ -1,5 +1,6 @@
 ## Working With Arrays
 
+<details>
 <summary>
 Advanced topics about arrays: methods, tools, building a project.
 </summary>
@@ -813,5 +814,6 @@ sorting arrays? flattening maps?
 >
 > GOOD LUCK
 
+</details>
 </details>
 </details>
