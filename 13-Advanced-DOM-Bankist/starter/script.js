@@ -67,7 +67,102 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
     section.scrollIntoView({ behavior: 'smooth' });
   }
 });
-const header = document.head;
+
+//tabbed component
+const tabContainer = document.querySelector('.operations__tab-container');
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContent = document.querySelectorAll('.operations__content');
+
+tabContainer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const clicked = e.target.closest('.operations__tab');
+  if (clicked) {
+    const tabActive = 'operations__tab--active';
+    const contentActive = 'operations__content--active';
+    tabs.forEach(tab => tab.classList.remove(tabActive));
+    tabsContent.forEach(content => content.classList.remove(contentActive));
+    clicked.classList.add(tabActive);
+    tabsContent[Number(clicked.dataset.tab) - 1].classList.add(contentActive);
+  }
+});
+
+// links fadeout Effect
+const nav = document.querySelector('.nav');
+
+const handleHover = function (e, opacityValue) {
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
+    //console.log(link);
+    const siblings = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
+    siblings.forEach(el => {
+      if (el !== link) {
+        el.style.opacity = opacityValue;
+      }
+    });
+    logo.style.opacity = opacityValue;
+  }
+};
+nav.addEventListener('mouseover', function (e) {
+  handleHover(e, 0.5);
+});
+const handleHoverBind = function (e) {
+  //this is the number we passed!
+  if (e.target.classList.contains('nav__link')) {
+    const link = e.target;
+    //console.log(link);
+    const siblings = link.closest('.nav').querySelectorAll('.nav__link');
+    const logo = link.closest('.nav').querySelector('img');
+    siblings.forEach(el => {
+      if (el !== link) {
+        el.style.opacity = this;
+      }
+    });
+    logo.style.opacity = this;
+  }
+};
+
+nav.addEventListener('mouseout', handleHoverBind.bind(1));
+
+//sticky navigation
+
+//const initialCoords = section1.getBoundingClientRect();
+//bad way
+// window.addEventListener('scroll', function (e) {
+//   console.log();
+//   if (window.scrollY > initialCoords.top) {
+//     nav.classList.add('sticky');
+//   } else {
+//     nav.classList.remove('sticky');
+//   }
+// });
+
+//better way with the IntersectionObserver
+const observerOptions = {
+  root: null,
+  threshold: [0],
+  // rootMargin: '-90px',
+  rootMargin: `${-1 * nav.getBoundingClientRect().height}px`,
+};
+const observerCallback = (entries, observers) => {
+  const [entry] = entries;
+  if (!entry.isIntersecting) {
+    console.log(entry);
+    nav.classList.add('sticky');
+  } else {
+    nav.classList.remove('sticky');
+  }
+};
+const headerObserver = new IntersectionObserver(
+  observerCallback,
+  observerOptions
+);
+const header = document.querySelector('.header');
+headerObserver.observe(header);
+///////
+// practice!
+///////
+const htmlHeader = document.head;
 const body = document.body;
 const message = document.createElement('div');
 message.classList.add('cookie-message');
@@ -75,7 +170,7 @@ message.classList.add('cookie-message');
 //   "We use cookies for improved functionality and analytics.";
 message.innerHTML =
   'We use cookied for improved functionality and analytics. <button class="btn btn--close-cookie" style="color: blue">Got it!</button>';
-header.prepend(message);
+htmlHeader.prepend(message);
 document
   .querySelector('.btn--close-cookie')
   .addEventListener('click', () => message.remove());

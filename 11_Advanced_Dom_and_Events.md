@@ -550,9 +550,170 @@ we use our css properties by addressing them with **var(css-custom-property-name
 
 ### Building A Tabbed Component
 
+<details>
+<summary>
+Tab components have tabs, and when the tabs are clicked, the content changes. we use event delegations.
+</summary>
+
+we will add this behavior for our projects.
+this is 'operations' section in the html, including the 'operations\_\_tab-container' class, the the content elements 'operations\_\_content--1' with the 'operations\_\_tab--active' class.
+
+we do the same thing as before, by attaching an eventListener handler to the container tab parent tab and using event delegations.
+the problem is the element button has inner elements, which don't have the same structure, so if we click them, the button isn't what firing the event. so we need to use our dom traversal skills.
+it's better to use the _.closest()_ method than the _.parent_ property, and if we don't find a match, just ignore it (have a guard clause).
+
+we need to change the css classes for the tabs (make the current tab stand out), and the content(show the correct content)
+
+```js
+//tabbed component
+const tabContainer = document.querySelector(".operations__tab-container");
+const tabs = document.querySelectorAll(".operations__tab");
+const tabsContent = document.querySelectorAll(".operations__content");
+
+tabContainer.addEventListener("click", function (e) {
+  e.preventDefault();
+  const clicked = e.target.closest(".operations__tab");
+  if (clicked) {
+    const tabActive = "operations__tab--active";
+    const contentActive = "operations__content--active";
+    tabs.forEach((tab) => tab.classList.remove(tabActive));
+    tabsContent.forEach((content) => content.classList.remove(contentActive));
+    clicked.classList.add(tabActive);
+    tabsContent[Number(clicked.dataset.tab) - 1].classList.add(contentActive);
+  }
+});
+```
+
+</details>
+
+### Passing Argument To Event Handlers
+
+<details>
+<summary>
+How to pass extra arguments other than the event into the handling function: manually calling and binding.
+</summary>
+adding effects to the section links. when we hover over one, the reset are faded out.
+
+we know we should do event delegation, so we use the _.nav_ element. we use the 'mouseover' event, which has the corresponding event of 'mouseout'. we then refactor the code outside, we need the event and the opacity. now we need to call the new function,and pass the event and the opacity value.
+
+```js
+const nav = document.querySelector(".nav");
+const handleHover = function (e, opacityValue) {
+  if (e.target.classList.contains("nav__link")) {
+    const link = e.target;
+    //console.log(link);
+    const siblings = link.closest(".nav").querySelectorAll(".nav__link");
+    const logo = link.closest(".nav").querySelector("img");
+    siblings.forEach((el) => {
+      if (el !== link) {
+        el.style.opacity = opacityValue;
+      }
+    });
+    logo.style.opacity = opacityValue;
+  }
+};
+
+nav.addEventListener("mouseover", function (e) {
+  handleHover(e, 0.5); // option 1 - call manually
+});
+```
+
+we can use the callback function to call the new function manually, or use _.bind_ method to create a new function
+where the _'this'_ keyword contains the data (the opacity)
+
+```js
+const handleHoverBind = function (e) {
+  if (e.target.classList.contains("nav__link")) {
+    const link = e.target;
+    //console.log(link);
+    const siblings = link.closest(".nav").querySelectorAll(".nav__link");
+    const logo = link.closest(".nav").querySelector("img");
+    siblings.forEach((el) => {
+      if (el !== link) {
+        el.style.opacity = this;
+      }
+    });
+    logo.style.opacity = this;
+  }
+};
+
+nav.addEventListener("mouseout", handleHoverBind.bind(1));
+```
+
+</details>
+
+### Implementing Stick Navigation
+
+<details>
+<summary>
+Implementing behavior for scroll event
+</summary>
+
+Implementing 'sticky' navigation, the menu bar becomes attached to the top of the page when scrolling down, and behaves normally when inside the regular view.
+
+it's defined as a css class that changes the position attribute to _fixed_.
+
+```css
+/* nav and stickly class at the same time */
+.nav.sticky {
+  position: fixed;
+  background-color: rgba(255, 255, 255, 0.95);
+}
+```
+
+so, our event listener will somehow know when the element is in view and when not.
+we first use the _'scroll'_ event of the window object. it's not efficient, because it fires at each scroll.
+we want to add sticky class when we go past the value and remove it when we're inside
+
+```js
+const initialCoords = section1.getBoundingClientRect();
+window.addEventListener("scroll", function (e) {
+  console.log();
+  if (window.scrollY > initialCoords.top) {
+    nav.classList.add("sticky");
+  } else {
+    nav.classList.remove("sticky");
+  }
+});
+```
+
+this will cause many events to fire, especially with mobile or older browsers.
+
+</details>
+
+### The Intersection Observer API
+
+<details>
+<summary>
+The API allows the code to listen to events that happen when one element intersects with another element or the viewport.
+</summary>
+
+The [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) is a better way to implement stick navigation in our project.
+
+we first create an object with a callback function and options.
+
+the options contain a root element, null means the entire viewport. threshold is a percentage,at which percentage the callback is invoked. we can also pass an array of thresholds.
+there is also rootMargin (which must be pixels or percentage)
+whenever the thing we observe intersects the root object at that threshold (up or down), the function is called. the function has two parameters, _entries_ and the _observer_
+
+we have the intersection Ratio, which is about the threshold, and the _isIntersecting_ property.
+we want to be sticky when the header is out of view completely.
+
+```js
+const observer = new IntersectionObserver();
+```
+
+this is more efficient than the scroll event, because it only fires in relation to the observed object.
+
+the threshold is about the percentage of the observed element which is visible. if zero, then we always get that _'isIntersecting'_ is true..
+
+#### Revealing Elements on Scroll
+
 <!-- <details> -->
 <summary>
 
 </summary>
 
 <!-- </details> -->
+
+</details>
