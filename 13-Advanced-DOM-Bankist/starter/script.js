@@ -1,5 +1,7 @@
 'use strict';
 
+//const { hasSubscribers } = require('diagnostic_channel');
+
 ///////////////////////////////////////
 // Modal window
 
@@ -30,6 +32,41 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
+//Page navigation
+
+//button learn-more
+const scrollButton = document.querySelector('.btn--scroll-to');
+const section1 = document.getElementById('section--1');
+scrollButton.addEventListener('click', function (e) {
+  //old way
+  //const s1coords = section1.getBoundingClientRect();
+  // window.scrollTo({
+  //   left: s1coords.left + window.pageXOffset,
+  //   top: s1coords.top + window.pageYOffset,
+  //   behavior: 'smooth',
+  // });
+
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
+// attack to each element
+// document.querySelectorAll('.nav__link').forEach(function (el) {
+//   el.addEventListener('click', function (e) {
+//     e.preventDefault();
+//     const id = this.getAttribute('href');
+//     const section = document.querySelector(id);
+//     section.scrollIntoView({ behavior: 'smooth' });
+//   });
+// });
+
+//attach to parent elements
+document.querySelector('.nav__links').addEventListener('click', function (e) {
+  e.preventDefault();
+  if (e.target.classList.contains('nav__link')) {
+    const id = e.target.getAttribute('href');
+    const section = document.querySelector(id);
+    section.scrollIntoView({ behavior: 'smooth' });
+  }
+});
 const header = document.head;
 const body = document.body;
 const message = document.createElement('div');
@@ -55,19 +92,6 @@ console.log(logo.designer);
 console.log(logo.getAttribute('designer'));
 console.log(logo.dataset.versionNumber);
 
-const scrollButton = document.querySelector('.btn--scroll-to');
-const section1 = document.getElementById('section--1');
-scrollButton.addEventListener('click', function (e) {
-  //oldway
-  //const s1coords = section1.getBoundingClientRect();
-  // window.scrollTo({
-  //   left: s1coords.left + window.pageXOffset,
-  //   top: s1coords.top + window.pageYOffset,
-  //   behavior: 'smooth',
-  // });
-
-  section1.scrollIntoView({ behavior: 'smooth' });
-});
 const randomColor = () => {
   const randomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1) + min);
@@ -100,4 +124,33 @@ const eventPropagation = function () {
     console.log(e.target);
   });
 };
-eventPropagation();
+//eventPropagation();
+
+const domTraversing = function () {
+  console.log('dom traversing');
+  const h1 = document.querySelector('h1');
+  const childrenAtAnyLevel = h1.querySelectorAll('.highlight');
+  console.log(childrenAtAnyLevel);
+  console.log(h1.children, h1.childNodes);
+  console.log(h1.firstElementChild, h1.lastElementChild);
+  console.log(h1.firstChild, h1.lastChild);
+
+  //parents
+  console.log(h1.parentElement, h1.parentNode);
+  console.log(h1.closest('.header'));
+  console.log(h1 === h1.closest('h1')); //matches self
+
+  //siblings
+  console.log('prev element', h1.previousElementSibling);
+  console.log('next element', h1.nextElementSibling);
+
+  console.log('prev node', h1.previousSibling);
+  console.log('next node', h1.nextSibling);
+  console.log('all siblings (including self', h1.parentElement.children);
+  [...h1.parentElement.children].forEach(function (el) {
+    if (el !== h1) {
+      el.style.transform = 'scale(0.5)';
+    }
+  });
+};
+//domTraversing();

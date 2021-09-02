@@ -272,12 +272,10 @@ section1.scrollIntoView({ behavior: "smooth" });
 
 ### Events
 
-<!-- <details> -->
+<details>
 <summary>
-
+Events are triggered by actions (clicking, scrolling, pressing keys...) and fire a behavior. we control the behavior with event listeners.
 </summary>
-
-<!-- </details> -->
 
 #### Types of Events and Events Handlers
 
@@ -428,6 +426,129 @@ document.querySelector(".nav__links").addEventListener(
 </details>
 
 #### Event Delegation: Implementing Page Navigation
+
+<details>
+<summary>
+rather than create the same event handler on many elements, we can create it on a parent element and get the origination element from the event to perform the action.
+</summary>
+
+implement smooth scrolling again.
+we need to anchor to get the element. so we take the attribute from the calling object and then match the id.
+
+```js
+document.querySelectorAll(".nav__link").forEach(function (el) {
+  el.addEventListener("click", function (e) {
+    e.preventDefault();
+    const id = this.getAttribute("href");
+    const section = document.querySelector(id);
+    section.scrollIntoView({ behavior: "smooth" });
+  });
+});
+```
+
+the problem is that we are attaching the same callback function to each of the elements, if we had a lot of buttons, we would create the same function many times.
+we get around this by exploiting event propagation, and we attach the callback to the parent elements instead.
+
+1. Add event listener to common parent element.
+2. Determine what element originated the event.
+
+```js
+document.querySelector(".nav__links").addEventListener("click", function (e) {
+  e.preventDefault();
+  //matching strategy
+  if (e.target.classList.contains("nav__link")) {
+    const id = e.target.getAttribute("href");
+    const section = document.querySelector(id);
+    section.scrollIntoView({ behavior: "smooth" });
+  }
+});
+```
+
+</details>
+</details>
+
+### DOM Traversing
+
+<details>
+<summary>
+Accessing elements relative to a current element in the DOM. we can access child elements, parent and even siblings
+</summary>
+
+DOM traversing it like walking through the DOM, we can use it to find parent/child/siblings elements, even those that were created dynamically.
+almost everything we can do on the document element, we can do with the nested elements.
+
+- _.childNodes_ - any type of **nodes** inside.
+- _.children_ - a live collection of direct children **elements**.
+- _.firstElementChild_, _.lastElementChild_ - select the first or last child **elements**.
+- _.firstChild_, _.lastChild_ - select first or last child **nodes**.
+- _.parentNode_ - direct parent **node**.
+- _.parentElement_ - direct parent **Element**.
+- _.closest(query)_ - match the closest parent **element** for this query. will match itself.
+- _.previousElementSibling_, _.nextElementSibling_ - match prev/next sibling **element**.
+- _.previousSibling_, _nextSibling_ - match prev/next sibling **node**.
+
+we will do some examples with the h1 element.
+
+```html
+<h1>
+  When
+  <!-- Green highlight effect -->
+  <span class="highlight">banking</span>
+  meets<br />
+  <span class="highlight">minimalist</span>
+</h1>
+```
+
+we start from our H1 element and look around it.
+we can call querySelector on it, just like with the html document elements. this will give us children elements matching the query, at any level (direct or indirect).
+
+```js
+const h1 = document.querySelector("h1");
+//children
+const highlightedChildrenAtAnyLevel = h1.querySelectorAll(".highlight");
+console.log(highlightedChildrenAtAnyLevel);
+console.log(h1.children, h1.childNodes);
+console.log(h1.firstElementChild, h1.lastElementChild);
+console.log(h1.firstChild, h1.lastChild);
+```
+
+we can go upwards as well and take the parent. we can take the direct parent, or find the closest parent matching a query. the element itself can also be matched.
+
+```js
+//parents
+console.log(h1.parentElement, h1.parentNode);
+console.log(h1.closest(".header"));
+console.log(h1 === h1.closest("h1")); //matches self
+h1.closest(".header").style.background = "var(--gradient-secondary)";
+```
+
+we can also match for siblings (direct), we can take all siblings (including self) by moving up level and taking the children. we can spread the elements into an array to iterate over them,filter out the current one and apply some callback function to the other.
+
+```js
+console.log("prev element", h1.previousElementSibling);
+console.log("next element", h1.nextElementSibling);
+
+console.log("prev node", h1.previousSibling);
+console.log("next node", h1.nextSibling);
+console.log("all siblings (including self", h1.parentElement.children);
+[...h1.parentElement.children].forEach(function (el) {
+  if (el !== h1) {
+    el.style.transform = "scale(0.5)";
+  }
+});
+```
+
+we use our css properties by addressing them with **var(css-custom-property-name)**
+
+```css
+.btn:hover {
+  background-color: var(--color-primary-darker);
+}
+```
+
+</details>
+
+### Building A Tabbed Component
 
 <!-- <details> -->
 <summary>
