@@ -1,10 +1,10 @@
 ## Advanced DOM and Events
 
-<!-- <details> -->
+<details>
 <summary>
-
+Further, detailed, in depth look at the DOM. 
 </summary>
-further, detailed, in depth look at the DOM.
+Events, DOM Traversal, Intersection Observer, Event Delegation, implementing all sorts of features to our project.
 
 ### Project Introduction
 
@@ -594,7 +594,7 @@ How to pass extra arguments other than the event into the handling function: man
 </summary>
 adding effects to the section links. when we hover over one, the reset are faded out.
 
-we know we should do event delegation, so we use the _.nav_ element. we use the 'mouseover' event, which has the corresponding event of 'mouseout'. we then refactor the code outside, we need the event and the opacity. now we need to call the new function,and pass the event and the opacity value.
+we know we should do event delegation, so we use the _.nav_ element. we use the '_mouseover_' event, which has the corresponding event of '_mouseout_'. we then refactor the code outside, we need the event and the opacity. now we need to call the new function,and pass the event and the opacity value.
 
 ```js
 const nav = document.querySelector(".nav");
@@ -709,11 +709,307 @@ the threshold is about the percentage of the observed element which is visible. 
 
 #### Revealing Elements on Scroll
 
-<!-- <details> -->
+<details>
 <summary>
+Observing many elements, and then un-observing them.
+</summary>
+each section is 'reveled' when it comes into view, also achieved with the intersection observer.
 
+~~we have the css class which we first add to the html file. and we will remove it by code.~~
+
+we can actually also add it by code. so if someone has disabled javascript in the browser, the sections are still visible.
+
+```css
+.section--hidden {
+  opacity: 0;
+  transform: translateY(8rem);
+}
+```
+
+we need to know which section is intersecting with the view port. and because we want to do this only once, we can remove the observing action for this section to avoid triggering an event call
+
+```js
+const revealSections = (entries, observer) => {
+  const [entry] = entries;
+  if (entry.isIntersecting) {
+    entry.target.classList.remove(cssClassName);
+    observer.unobserve(entry.target);
+  }
+};
+```
+
+</details>
+
+#### Lazy Loading Images
+
+<details>
+<summary>
+Images are costly to display, we want to only show them when we need to. This is lady Loading. we also use the *'load'* event.
 </summary>
 
-<!-- </details> -->
+we can lazy load images to improve performance. we only load images when we need them. the low resolution image is loaded first, and we replace it with the real image afterwards.
+
+an image html is
+
+```html
+<img
+  src="img/digital-lazy.jpg"
+  data-src="img/digital.jpg"
+  alt="Computer"
+  class="features__img lazy-img"
+/>
+```
+
+and the lazy-img css class is
+
+```css
+.lazy-img {
+  filter: blur(20px);
+}
+```
+
+we replace the low resolution image src with the real source from the 'data-src' and remove the blurring filter.
+
+we can select all the images that have a property with ths selection rule combination of tag type (no prefix: _img_) having a property (square brackets: _\[data-src]_) without a space between them.
+
+```css
+img[data-src] {
+}
+```
+
+there is delay because our section are shifted. we do the same as what we did above. but we have an additional event that we listen to, the 'load event' we want to remove the blur only after the image was loaded, we can use the network tab in the console.
+
+```js
+const loadImage = (entries, observer) => {
+  const [entry] = entries;
+  if (entry.isIntersecting) {
+    const target = entry.target;
+    const loadHandler = (e) => {
+      console.log("removing blur");
+      e.target.classList.remove(cssClassName);
+      e.target.removeEventListener("load", loadHandler);
+    };
+    console.log("replacing source");
+    target.src = target.dataset.src;
+    target.addEventListener("load", loadHandler);
+
+    observer.unobserve(target);
+  }
+};
+```
+
+because we want our images to load before the threshold is reached, we specify a negative root margin, so the image starts loading a little bit before it comes into the viewport. which, in most cases, should hide the fact we are using lazy loading.
+
+</details>
+
+</details>
+
+### Building a Slider Component
+
+<details>
+<summary>
+A slider component, rotate images, keyboardEvents.
+</summary>
+we have slider that can rotate information.
+
+```html
+<section class="section" id="section--3">
+  <div class="section__title section__title--testimonials">
+    <h2 class="section__description">Not sure yet?</h2>
+    <h3 class="section__header">
+      Millions of Bankists are already making their lifes simpler.
+    </h3>
+  </div>
+
+  <div class="slider">
+    <div class="slide"><img src="img/img-1.jpg" alt="Photo 1" /></div>
+    <div class="slide"><img src="img/img-2.jpg" alt="Photo 2" /></div>
+    <div class="slide"><img src="img/img-3.jpg" alt="Photo 3" /></div>
+    <div class="slide"><img src="img/img-4.jpg" alt="Photo 4" /></div>
+    <button class="slider__btn slider__btn--left">&larr;</button>
+    <button class="slider__btn slider__btn--right">&rarr;</button>
+    <div class="dots"></div>
+  </div>
+</section>
+```
+
+if we look at the final project and comment out the overflow part of the slider class, we see that all of the slides are side by side. and their position is controlled by the transform property
+
+```css
+ {
+  overflow: hidden;
+  transform: translateX(0%);
+}
+```
+
+our first step is to set the position of the slides.
+
+we will work with comment out photos rather than the slides them self for the first part. all of the slides are at the same positions.
+we query all of them and change the style to have the transform property with a value of _translateX(percentage%)_
+we store the active slide and use it to align the slides to make the active slide visible.
+
+```js
+const slider = document.querySelector(".slider");
+const slides = document.querySelectorAll(".slide");
+const btnLeft = document.querySelector(".slider__btn--left");
+const btnRight = document.querySelector(".slider__btn--right");
+let currentSlide = 0;
+const numberOfSlides = [...slides].length;
+//this makes things easy to see
+slider.style.overflow = "visible";
+slider.style.transform = "scale(0.5)";
+const alignSlides = (direction) => {
+  currentSlide = (currentSlide + direction) % numberOfSlides;
+  if (currentSlide === -1) currentSlide = numberOfSlides - 1;
+  slides.forEach((slide, index) => {
+    slide.style.transform = `translateX(${(index - currentSlide) * 100}%)`;
+  });
+};
+alignSlides(0);
+
+btnRight.addEventListener("click", function (e) {
+  alignSlides(1);
+});
+btnLeft.addEventListener("click", function (e) {
+  alignSlides(-1);
+});
+```
+
+our next task is to add the dot navigation functionality and allow the user to press the arrows to move between slides.
+
+we take the keydown event and check which key was pressed
+
+```js
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowLeft") alignSlides(-1);
+  if (e.key === "ArrowRight") alignSlides(1);
+});
+```
+
+for the dots we first take to dot container, and then create as many dots as we need. we give them the correct classes, and change the classes each time we move slices.
+
+```js
+//change the active dot presentation
+const activateDots = function (slide) {
+  const activeDotCssClass = "dots__dot--active";
+  dotContainer
+    .querySelectorAll(`.${dotsCssClass}`)
+    .forEach((dot) => dot.classList.remove(activeDotCssClass));
+  dotContainer
+    .querySelector(`.${dotsCssClass}[data-slide="${slide}"]`)
+    .classList.add(activeDotCssClass);
+};
+
+//create dots and attach the delegate event to the dot container
+const createDots = () => {
+  slides.forEach((_, index) => {
+    dotContainer.insertAdjacentHTML(
+      "beforeend",
+      `<button class="${dotsCssClass}" data-slide="${index}"></button>`
+    );
+  });
+
+  dotContainer.addEventListener("click", function (e) {
+    const clicked = e.target;
+
+    if (clicked.classList.contains(dotsCssClass)) {
+      currentSlide = clicked.dataset.slide;
+      alignSlides();
+    }
+  });
+};
+createDots();
+```
+
+</details>
+
+### Lifecycle DOM Events
+
+<details>
+<summary>
+Events that happen to the DOM
+</summary>
+There are events that happen to the DOM during the life cycle, from the moment it's accessed, even before the user reads it.
+
+- _'DOMContentLoaded'_ event happens when the html is parsed into the DOM tree and all the scripts finished. it does not wait for images or other external resources.
+- _'load'_ - event happens on the **window** object after all the images and the external resources were loaded.
+- _'beforeunload'_ - happens on the **window** object before leaving. has many historical issues and ripe for abuse.
+
+```js
+document.addEventListener("DOMContentLoaded", function (e) {
+  console.log("HTML parsed and DOM tree built!", e);
+});
+window.addEventListener("load", function (e) {
+  console.log("Window loaded", e);
+});
+window.addEventListener("beforeunload", function (e) {
+  e.preventDefault();
+  console.log("before leaving", e);
+  e.returnValue = "";
+});
+```
+
+this is the reason we put the script tag at the end, so it's always the last thing. in _jquery_ we put all of our code into _document.ready_ function which is basically the same.
+
+</details>
+
+### Efficient Script Loading: _defer_ and _async_
+
+<details>
+<summary>
+We can get some better performance by placing the script tag in either the head or the body and by using different strategies to load it.
+</summary>
+
+adding javascript scripts to html, rather than simple notation, we can add the _defer_ or _async_ keywords.
+we can also write the script tag in the head or body of the html file
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- script in the head -->
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <!-- regular way -->
+    <script src="script.js"></script>
+    <!-- async way -->
+    <script async src="script.js"></script>
+    <!-- defer way -->
+    <script defer src="script.js"></script>
+  </body>
+</html>
+```
+
+the combination of the script type and the position control where and when it's parsed. we care about when it's fetched, parsed and executed in comparison to the rest of the html element
+| type | head | body |
+| ------- | ---- | ---- |
+| regular |fetch script and execute before finishing parsing the html. **DON'T DO THIS** | html is parsed, then script fetched and execute.|
+| _async_ | parsing html and fetching the script at the same time, the html stops and the script is executed, then the html resumes parsing. |no practical effect. |
+| _defer_ | the script is fetched early, but executes after html parsing.| no practical effect.|
+
+therefore, there are three viable options
+
+> - End of body
+>   - Scripts are fetched and executed **after the HTML is completely parsed**.
+>   - Use if you need to support old browsers.
+> - _Async_ in head
+>
+>   - Scripts are fetched **asynchronously** and executed **immediately**.
+>   - Usually the _DOMContentLoaded_ event waits for **all** scripts to execute, except for async script. So _DOMContentLoaded_ does **not** wait for async script.
+>   - Scripts **not** guaranteed to execute in order.
+>   - Use for 3rd-party scripts where order doesn't matter(e.g. Google Analytics).
+>
+> - _Defer_ in head
+>   - Scripts are fetched **asynchronously** and executed **after the HTML is completely parsed**.
+>   - _DOMContentLoaded_ event fires after the defer script is executed.
+>   - Scripts are executed in order.
+>   - this is the overall best solution! use for your own scripts and when order matters (e.g. including a library).
+
+we usually want to use the defer in the head of the script. if we have multiple 3rd party libraries we might put them in an async script.
+
+only modern browser support the _async_ and _defer_ policies. this is an html5 feature, not a javascript.
+
+</details>
 
 </details>

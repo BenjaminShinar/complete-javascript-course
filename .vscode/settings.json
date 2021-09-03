@@ -13,9 +13,11 @@
     "keydown",
     "keypress",
     "keyup",
+    "mouseout",
     "parens",
     "prettierrc",
     "puml",
-    "smblock"
+    "smblock",
+    "unobserve"
   ]
 }
