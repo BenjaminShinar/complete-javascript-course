@@ -294,3 +294,453 @@ Use constructor function to create objects and then add methods to the prototype
 </details>
 
 </details>
+
+### ES6 Classes
+
+<details>
+<summary>
+Like constructor functions, but with modern syntax.
+</summary>
+ES6 aren't classes like java or c++, they still do prototypical inheritance, but we a syntax that's more familiar to programmers from other languages.
+
+we can have class deceleration and class expressions.
+we use the keyword _class_, we must use _constructor_ as a method name. the other methods we define are part of the prototype, not on the object.
+
+```js
+const PersonEx = class {};
+class PersonCL {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  //method will be added to .prototype property.
+  calculateAge() {
+    console.log(2037 - this.birthYear);
+  }
+}
+
+const janice = new PersonCL("Janice", 1986);
+console.log(janice);
+```
+
+1. Classes are not hoisted.
+2. Classes are first-class citizens.
+3. Class are always executed in 'strict-mode'.
+
+we can't ignore prototypical inheritance, even if we use ES6 method. but the class syntax makes things nicer by having all the code at the same place,
+
+</details>
+
+### Getters And Setters
+
+<details>
+<summary>
+Function that get and set data, but are called on like regular properties. actually part of ES5.
+</summary>
+
+for getters, we create a normal function, and then add the _get_ keyword for to it. so we now longer need parentheses to call it. setters use the _set_ keyword and must take **one** parameter.
+
+```js
+const account = {
+  owner: "Jonas",
+  movements: [120, 30, 400],
+
+  get latest() {
+    return this.movements.slice(-1).pop();
+  },
+  set latest(mov) {
+    this.movements.push(mov);
+  },
+};
+console.log(account.latest);
+account.latest = 55;
+console.log(account);
+```
+
+for ES6 classes, the code is similar. we simply add the _'get/set'_ keywords.
+remember that it still is a function, and will be calculated only when we call it,and recalculated again for each call.
+
+```js
+class PersonCL {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  //method will be added to .prototype property.
+  get age() {
+    console.log(2037 - this.birthYear);
+  }
+}
+
+const janice = new PersonCL("Janice", 1986);
+console.log(janice.age);
+```
+
+Setters are great for data validation, we can ensure that the new data fits a criteria and if it doesn't we can reject it from overwriting the data.
+
+```js
+class PersonCL {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+    this.fullName = firstName + " unknown";
+  }
+  //method will be added to .prototype property.
+  get age() {
+    console.log(2037 - this.birthYear);
+  }
+  //setter has a different name than that of the property, usually underscore.
+  set fullName(name) {
+    if (name.includes(" ")) this._fullName = name;
+    else console.log(`${name} is not valid`);
+  }
+}
+```
+
+we should be careful of having the same name for the setter and the underlying method. otherwise we can get a stack-overflow. the convention is to have the inner property name with an underscore before it.
+
+</details>
+
+### Static Methods
+
+<details>
+<summary>
+Methods that belong to the namespace and act independent of whatever object we have.
+</summary>
+static methods don't operate on any instance of the class. like the *Array.from()* method. these are methods that aren't attached to the prototype, so they can't be called from an instance. they are part of the constructor function.
+
+```js
+Array.from(document.querySelectorAll("p")); //works
+[1, 3].from(document.querySelectorAll("p")); //error!
+```
+
+a lot of function from the _'Number'_ namespace are like that. the static function isn't inherited to the instances that were created with the function
+
+```js
+const PersonCF = function (firstName, birthYear) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+
+PersonCF.hey = function () {
+  console.log(this); // the constructor function is the 'this'
+  return "Hey!";
+};
+const ben = new PersonCF("ben", 1995);
+//console.log(ben.hey()); //error
+console.log(PersonCF.hey()); //works fine, called on constructor function
+```
+
+for es6 classes. we simply add the _static_ keyword
+
+```js
+class PersonES6 {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  //prototype method
+  hey() {
+    return `Hey ${this.firstName}`;
+  }
+  //static method
+  static hey() {
+    return `Hey there!`;
+  }
+}
+
+const dan = new PersonES6("dan", 1889);
+console.log(dan.hey()); //call prototype method
+console.log(PersonES6.hey()); // call static method
+```
+
+</details>
+
+### Object Creation with _Object.create()_
+
+<details>
+<summary>
+Object.create() returns a new object whose linked to a different object via the prototypical chain.
+</summary>
+
+The third way to create objects, by using the _Object.create()_ method, we still have prototype inheritance, but no prototype properties, no constructor function and no '_new_' operator.
+we use _Object.create()_ to manually set the prototype of the created object into a different object.
+
+```js
+const PersonProto = {
+  calcAgeOCR() {
+    return 2037 - this.birthYear;
+  }, //using enhanced object literals syntax
+};
+
+const steve = Object.create(PersonProto); //steve's prototype is PersonProto
+console.log(steve.__proto__);
+console.log(steve.calcAgeOCR()); //NaN
+steve.birthYear = 1992;
+console.log(steve.calcAgeOCR()); // now it works!
+```
+
+constructor function and ES6 classes use the _new_ keyword. _Object.create()_ sets the prototype manually. we can have different structures of objects with the same prototype, or similar structures with different prototypes.
+
+We can have function that behaves like a constructor function, but initiates the properties via the prototypical inheritance after the object was created
+
+```js
+PersonProto.init = function (firstName, birthYear) {
+  this.firstName = firstName; //the 'this' is the calling member
+  this.birthYear = birthYear;
+};
+const sarah = Object.create(PersonProto);
+sarah.init("sarah", 2011);
+console.log(sarah.calcAgeOCR());
+```
+
+#### Coding Challenge #2
+
+<details>
+<summary>
+Use ES6 classes, getter / setter to make the previous challenge cleaner to look at
+</summary>
+
+> Your tasks:
+>
+> 1. Re-create Challenge #1, but this time using an ES6 class (call it 'CarCl')
+> 2. Add a getter called 'speedUS' which returns the current speed in mi/h (divide by 1.6).
+> 3. Add a setter called 'speedUS' which sets the current speed in mi/h (but converts it to km/h before storing the value, by multiplying the input by 1.6)
+> 4. Create a new car and experiment with the 'accelerate' and 'brake' methods, and with the getter and setter.
+>
+> Test data:
+
+- Data car 1: 'Ford' going at 120 km/h.
+
+</details>
+
+</details>
+
+### Inheritance Between _'Classes'_
+
+<details>
+<summary>
+Different ways to create inheritance chains between prototypes
+</summary>
+
+so far, we looked at ways to implement inheritance between an object and it's prototype, now we will look at _'real inheritance'_ between _'real classes'_. like how other programming languages do it.
+
+#### Constructor Functions Inheritance
+
+<details>
+<summary>
+Manually manipulating the prototype chain
+</summary>
+
+we start with inheritance between constructor functions.
+we will use the Person Class as a parent class, and a 'student' class as a derived chile class. we will do this with using the constructor function, es6 classes and _Object.create()_.
+
+we start with the base class. like we did many times already. we will then have constructor for the student, with the same arguments and additional data as needed. we also have a method on the prototype.
+
+```js
+const PersonCFBase = function (firstName, birthYear) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+
+PersonCFBase.prototype.calculateAge = function () {
+  console.log(2037 - this.birthYear);
+};
+
+const StudentCFDerived = function (firstName, birthYear, course) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+  this.course = course;
+};
+StudentCFDerived.prototype.introduce = function () {
+  console.log(`my name is ${this.firstName}, and I study ${this.course}`);
+};
+const mike = new StudentCFDerived("mike", 2015, "Economics");
+
+mike.introduce();
+```
+
+the first thing we want to do is to remove the duplication from the student constructor function. the problem is that if we use it directly, we don't have the _'this'_ keyword, so we use the _.call()_ method.
+
+```js
+const StudentCFDerived = function (firstName, birthYear, course) {
+  //PersonCFBase(firstName,birthYear); //doesn't work
+  PersonCFBase.call(this, firstName, birthYear); //this works
+  this.course = course;
+};
+
+//mike.calculateAge(); //doesn't work
+mike.introduce(); //works
+```
+
+we have the introduce method, but not 'calculate age' method on the student object. we want to inherit from the person class. we want to make the prototype chain fit this vision.
+the prototype of student.\_\_proto\_\_ should be the person prototype. this is done manually for now.
+
+```js
+StudentCFDerived.prototype.foo = function () {};
+console.log(StudentCFDerived.prototype); //foo is visible
+StudentCFDerived.prototype = Object.create(PersonCFBase.prototype);
+console.log(StudentCFDerived.prototype); //foo is gone!
+const jen = new StudentCFDerived("jen", 2016, "Math");
+jen.calculateAge(); //works
+```
+
+this actually creates a new object as the prototype, so any new student will lose access to the previous methods, because now we created an empty (but still linked) object as the prototype. this means we should restructure the order.
+
+we have to use _Object.create()_ to set up the prototype chain. otherwise we get a weird thing. we want to inherit, not make the same.
+
+```js
+StudentCFDerived.prototype = PersonCFBase.prototype; //is bad.
+StudentCFDerived.prototype = Object.create(PersonCFBase.prototype); // is good, almost
+```
+
+now we make a new student object, and when we call a method, like calculateAge(), it travels across the prototype chain, from the student prototype, ot the person prototype, and then the Object prototype.
+
+we still have some stuff to fix! we want the _.prototype.constructor_ to point to the correct constructor function!
+
+```js
+console.log(StudentCFDerived.prototype.constructor); //personCFBase
+StudentCFDerived.prototype.constructor = StudentCFDerived;
+console.log(StudentCFDerived.prototype.constructor); //StudentCFDerived
+
+console.log(jen instanceof StudentCFDerived); //true
+console.log(jen instanceof PersonCFBase); //true
+console.log(jen instanceof Object); //true
+```
+
+</details>
+
+#### Coding Challenge #3
+
+<details>
+<summary>
+Using inheritance with constructor functions, overriding some functions and not others. using the first matched method in the prototype chain.
+</summary>
+
+> Your tasks:
+>
+> 1. Use a constructor function to implement an Electric Car (called 'EV') as a child "class" of 'Car'. Besides a make and current speed, the 'EV' also has the current battery charge in % ('charge' property)
+> 2. Implement a 'chargeBattery' method which takes an argument 'chargeTo' and sets the battery charge to 'chargeTo'.
+> 3. Implement an 'accelerate' method that will increase the car's speed by 20, and decrease the charge by 1%. Then log a message like this: 'Tesla going at 140 km/h, with a charge of 22%'.
+> 4. Create an electric car object and experiment with calling 'accelerate', 'brake' and 'chargeBattery' (charge to 90%). Notice what happens when you 'accelerate'!
+>
+> Hint: Review the definition of polymorphism
+>
+> Test data:
+>
+> - Data car 1: 'Tesla' going at 120 km/h, with a charge of 23.
+
+</details>
+
+#### ES6 Classes Inheritance
+
+<details>
+<summary>
+The ES6 classes syntax for inheritance. the most like other languages
+</summary>
+
+Now we will use ES6 classes to inherit from
+we start with the same ES6 class for person,
+the 'class' syntax hides the details and does the work for us, we simply have the additional _extends_ and _super_ keywords.
+
+- _extends_ links the classes and the prototypes.
+- _super_ calls the constructor function of the parent class.
+
+if we don't have additional arguments to the constructor, we can drop the entire constructor call in the derived class. it will be generated automatically.
+
+```js
+class A {
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+}
+class B extends A {
+  constructor(a, b, c) {
+    super(a, b);
+    this.c = c;
+  }
+  foo() {
+    return this.a + this.b + this.c;
+  }
+}
+class C extends A {
+  //we can drop the constructor
+  bar() {
+    return this.a * this.b;
+  }
+}
+const b = new B(1, 2, 3);
+console.log(b.foo());
+const c = new C(4, 5);
+console.log(c.bar());
+```
+
+the prototype chain is automatically set up by the _extends_ keyword. we can still override methods in the derived class to make it appear first in the prototype chain.
+
+**there is a danger associated with inheritance, but we will see it later in the course.**
+
+</details>
+
+#### _Object.create()_ Inheritance
+
+<details>
+<summary>
+Creating Inheritance via the Object.create() method by specifying the objects directly.
+</summary>
+
+we make the derived prototype inherit from the base prototype with _Object.create()_. and now we have a prototype chain. we can then add methods to the new prototype that we created. the same prototype chain rules apply
+
+there is a diagram.
+
+```js
+const StudentPrototype = Object.create(PersonPrototype);
+StudentPrototype.init = function (firstName, birthYear, course) {
+  PersonPrototype.init.call(this, firstName, birthYear);
+  this.course = course;
+};
+StudentPrototype.introduce = function () {
+  return `hey! I am ${this.firstName}, and I study ${this.course} for fun!`;
+};
+const jay = Object.create(StudentPrototype);
+
+jay.init("jay", 2019, "chemistry");
+console.log(jay.calcAgeOCR());
+console.log(jay.introduce());
+```
+
+No need to use the _'new'_ keyword, worry about constructors or stuff like that, this isn't trying to copy other languages. we are just linking objects together to serve as prototypes.
+
+</details>
+
+</details>
+
+### Some More Class Examples
+
+ <!-- <details> -->
+<summary>
+
+</summary>
+
+<!-- </details> -->
+
+##
+
+#### Coding Challenge #4
+
+<details>
+<summary>
+
+</summary>
+
+> Your tasks:
+>
+> 1. Re-create Challenge #3, but this time using ES6 classes: create an 'EVCl' child class of the 'CarCl' class.
+> 2. Make the 'charge' property private.
+> 3. Implement the ability to chain the 'accelerate' and 'chargeBattery' methods of this class, and also update the 'brake' method in the 'CarCl' class. Then experiment with chaining!
+>
+> Test data:
+>
+> - Data car 1: 'Rivian' going at 120 km/h, with a charge of 23%.
+
+</details>

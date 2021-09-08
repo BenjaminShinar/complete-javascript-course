@@ -95,6 +95,8 @@ const nodePrototypes = function () {
 nodePrototypes();
 
 const codingChallenge1 = function () {
+  console.log('Challenge #1');
+
   //constructor
   const Car = function (make, speed) {
     this.make = make;
@@ -132,3 +134,345 @@ const codingChallenge1 = function () {
 };
 
 codingChallenge1();
+
+const PersonEx = class {};
+class PersonCL {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+    this._fullName = firstName + ' unknown';
+  }
+  //method will be added to .prototype property.
+  calculateAge() {
+    console.log(2037 - this.birthYear);
+  }
+  //getter method
+  get age() {
+    return 2037 - this.birthYear;
+  }
+
+  set fullName(name) {
+    if (name.includes(' ')) this['_fullName'] = this.firstName + name;
+    else console.log(`${name} is not valid`);
+  }
+}
+
+const janice = new PersonCL('Janice', 1986);
+console.log(janice);
+janice.calculateAge();
+
+const account = {
+  owner: 'Jonas',
+  movements: [120, 30, 400],
+  get latest() {
+    return this.movements.slice(-1).pop();
+  },
+  set latest(mov) {
+    this.movements.push(mov);
+  },
+};
+console.log(account.latest);
+account.latest = 90;
+console.log(account);
+console.log(janice.age);
+janice.fullName = 'von jane';
+console.log(janice);
+
+const PersonCF = function (firstName, birthYear) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+
+PersonCF.hey = function () {
+  //console.log(this);
+  return 'Hey!';
+};
+const ben = new PersonCF('ben', 1995);
+//console.log(ben.hey()); //error
+console.log(PersonCF.hey()); //works fine, called on constructor function
+
+class PersonES6 {
+  constructor(firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  }
+  hey() {
+    return `Hey ${this.firstName}`;
+  }
+  static hey() {
+    return `Hey there!`;
+  }
+}
+
+const dan = new PersonES6('dan', 1889);
+console.log(dan.hey());
+console.log(PersonES6.hey());
+
+const PersonProto = {
+  calcAgeOCR() {
+    return 2037 - this.birthYear;
+  }, //using enhanced object literals syntax
+};
+
+const steve = Object.create(PersonProto);
+console.log(steve.__proto__);
+console.log(steve.calcAgeOCR());
+steve.birthYear = 1992;
+console.log(steve.calcAgeOCR());
+
+PersonProto.init = function (firstName, birthYear) {
+  this.firstName = firstName;
+  this.birthYear = birthYear;
+};
+const sarah = Object.create(PersonProto);
+sarah.init('sarah', 2011);
+console.log(sarah.calcAgeOCR());
+
+const codingChallenge2 = function () {
+  console.log('Challenge #2');
+
+  class CarCl {
+    constructor(make, speed) {
+      this.make = make;
+      this.speed = speed;
+    }
+    changeSpeed = function (diff) {
+      this.speed += diff;
+      console.log(`${this.make} is driving at ${this.speed}`);
+    };
+    accelerate = function () {
+      this.changeSpeed(10);
+    };
+    break = function () {
+      this.changeSpeed(-5);
+    };
+    get SpeedUS() {
+      return this.speed / 1.6;
+    }
+    set SpeedUS(usSpeed) {
+      this.speed = usSpeed * 1.6;
+    }
+  }
+
+  const ford = new CarCl('Ford', 120);
+  ford.break();
+  ford.break();
+  ford.accelerate();
+  console.log(`US speed is ${ford.SpeedUS} mi/h`);
+  ford.SpeedUS = 115;
+  console.log(`US speed is ${ford.SpeedUS} mi/h`);
+  ford.break();
+};
+
+codingChallenge2();
+
+function constructorFunctionInheritance() {
+  console.log('Constructor Functions Inheritance');
+
+  const PersonCFBase = function (firstName, birthYear) {
+    this.firstName = firstName;
+    this.birthYear = birthYear;
+  };
+
+  PersonCFBase.prototype.calculateAge = function () {
+    console.log(2037 - this.birthYear);
+  };
+
+  const StudentCFDerived = function (firstName, birthYear, course) {
+    //this.firstName = firstName; //duplicate
+    //this.birthYear = birthYear; //duplicate
+    //PersonCFBase(firstName,birthYear); //doesn't work
+    PersonCFBase.call(this, firstName, birthYear); //this works!
+    this.course = course;
+  };
+
+  StudentCFDerived.prototype.introduce = function () {
+    console.log(`my name is ${this.firstName}, and I study ${this.course}`);
+  };
+  const mike = new StudentCFDerived('mike', 2015, 'Economics');
+  //mike.calculateAge(); //doesn't work
+  mike.introduce();
+  StudentCFDerived.prototype.foo = function () {};
+  console.log('before', StudentCFDerived.prototype);
+  //StudentCFDerived.prototype = PersonCFBase.prototype;
+
+  StudentCFDerived.prototype = Object.create(PersonCFBase.prototype);
+  console.log('after', StudentCFDerived.prototype);
+  const jen = new StudentCFDerived('jennifer', 2015, 'Economics');
+  //jen.introduce();
+  jen.calculateAge(); //now this works!
+
+  console.log('jen.__proto__', jen.__proto__); //personCFBase
+  console.log('jen.__proto__.__proto__', jen.__proto__.__proto__);
+
+  console.log(StudentCFDerived.prototype.constructor); //personCFBase
+  StudentCFDerived.prototype.constructor = StudentCFDerived;
+  console.log(StudentCFDerived.prototype.constructor); //StudentCFDerived
+
+  console.log('jen.__proto__', jen.__proto__); //personCFBase, constructor StudentCFDerived
+  console.log('jen.__proto__.__proto__', jen.__proto__.__proto__);
+  console.log(jen instanceof StudentCFDerived); //true
+  console.log(jen instanceof PersonCFBase); //true
+  console.log(jen instanceof Object); //true
+}
+constructorFunctionInheritance();
+
+const codingChallenge3 = function () {
+  console.log('Challenge #3');
+  //constructor from coding challenge 1
+  const Car = function (make, speed) {
+    this.make = make;
+    this.speed = speed;
+  };
+  Car.prototype.formatter = new Intl.NumberFormat('en-us', {
+    style: 'unit',
+    unit: 'mile-per-hour',
+  });
+  Car.prototype.formatSpeed = function () {
+    return this.formatter.format(this.speed);
+  };
+  Car.prototype.changeSpeed = function (diff) {
+    this.speed += diff;
+    console.log(`${this.make} is driving at ${this.formatSpeed()}`);
+  };
+  Car.prototype.accelerate = function () {
+    this.changeSpeed(10);
+  };
+  Car.prototype.break = function () {
+    this.changeSpeed(-5);
+  };
+  const EV = function (make, speed, charge) {
+    Car.call(this, make, speed); //delegate parent constructor
+    this.charge = charge;
+  };
+
+  //linking prototypes
+  EV.prototype = Object.create(Car.prototype);
+  EV.prototype.constructor = EV;
+
+  //adding the new methods to the EV prototype.
+  EV.prototype.chargeBattery = function (chargeTo) {
+    this.charge = chargeTo;
+  };
+  //override!
+  EV.prototype.accelerate = function () {
+    this.charge -= 1;
+    this.speed += 20;
+    console.log(
+      `${this.make} is driving at ${this.formatSpeed()} with a charge of ${
+        this.charge
+      }%`
+    );
+  };
+
+  const tesla = new EV('Tesla', 120, 23);
+  tesla.accelerate();
+  tesla.break(); //use same break;
+
+  tesla.chargeBattery(70);
+  tesla.accelerate();
+  tesla.accelerate();
+
+  const bmw = new Car('bmw', 90);
+  bmw.accelerate(); //no change!
+  bmw.break();
+  console.log(tesla.break === bmw.break); //true
+  console.log(tesla.accelerate === bmw.accelerate); //false
+  console.log(tesla instanceof EV, tesla instanceof Car); //true for both
+  console.log(bmw instanceof EV, bmw instanceof Car); //false for EV, true for Car
+};
+
+codingChallenge3();
+
+function eS6Inheritance() {
+  console.log('ES6 classes Inheritance');
+
+  class PersonES6Base {
+    constructor(firstName, birthYear) {
+      this.firstName = firstName;
+      this.birthYear = birthYear;
+    }
+    calculateAge() {
+      console.log(2037 - this.birthYear);
+    }
+    static hey() {
+      return `Hey there!`;
+    }
+  }
+  const jd = new PersonES6Base('js,', 2019);
+  jd.calculateAge();
+  class StudentES6Derived extends PersonES6Base {
+    constructor(firstName, birthYear, course) {
+      super(firstName, birthYear);
+      this.course = course;
+    }
+    introduce() {
+      console.log(`I'm ${this.firstName} and I study ${this.course}`);
+    }
+    calculateAge() {
+      console.log(2022 - this.birthYear);
+    }
+  }
+  const max = new StudentES6Derived('max', 2007, 'biology');
+  max.introduce();
+  max.calculateAge();
+  const ABC = () => {
+    class A {
+      constructor(a, b) {
+        this.a = a;
+        this.b = b;
+      }
+    }
+    class B extends A {
+      constructor(a, b, c) {
+        super(a, b);
+        this.c = c;
+      }
+      foo() {
+        return this.a + this.b + this.c;
+      }
+    }
+    class C extends A {
+      bar() {
+        return this.a * this.b;
+      }
+    }
+    const b = new B(1, 2, 3);
+    console.log(b.foo());
+    const c = new C(4, 5);
+    console.log(c.bar());
+  };
+  ABC();
+}
+eS6Inheritance();
+
+function objectCreateInheritance() {
+  console.log('Object Create Inheritance');
+  const PersonPrototype = {
+    calcAgeOCR() {
+      return 2037 - this.birthYear;
+    }, //using enhanced object literals syntax
+    init(firstName, birthYear) {
+      this.firstName = firstName;
+      this.birthYear = birthYear;
+    },
+  };
+  const p = Object.create(PersonPrototype);
+  p.init('joe', 2017);
+  console.log(p.calcAgeOCR());
+  const StudentPrototype = Object.create(PersonPrototype);
+  StudentPrototype.init = function (firstName, birthYear, course) {
+    PersonPrototype.init.call(this, firstName, birthYear);
+    //PersonPrototype.init(firstName, birthYear); // this also works
+    this.course = course;
+  };
+  StudentPrototype.introduce = function () {
+    return `hey! I am ${this.firstName}, and I study ${this.course} for fun!`;
+  };
+  const jay = Object.create(StudentPrototype);
+
+  jay.init('jay', 2019, 'chemistry');
+  console.log(jay.calcAgeOCR());
+  console.log(jay.introduce());
+}
+objectCreateInheritance();
