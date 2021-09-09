@@ -1,9 +1,10 @@
 ## Object-Oriented Programming (OOP) With JavaScript
 
-<!-- <details> -->
+<details>
 <summary>
-
+What are prototypes, how are classes defined in JavaScript and ES6 syntax. the prototypes inheritance chain.
 </summary>
+
 Javascript is an object oriented language.
 we have constructors, prototypes, classes, inheritance, and ES6 methods.
 
@@ -27,7 +28,10 @@ IMPORTANT: Javascript doesn't have the common form of private and public methods
 
 #### OOP Principals
 
-there are 4 common principles for OOP: _abstraction_, _encapsulation_, _inheritance_, _polymorphism_.
+<details>
+<summary>
+there are 4 common principles for OOP: abstraction, encapsulation, inheritance,polymorphism.
+</summary>
 
 > - **Abstraction**: Ignoring or hiding details tha **don't matter**, allowing us to get and **overview** perspective of the _thing_ we're implementing, instead of messing with details that don't really matter to our implementation.
 >
@@ -36,6 +40,8 @@ there are 4 common principles for OOP: _abstraction_, _encapsulation_, _inherita
 > - **Inheritance**: Making all properties and methods of a certain class **available to a child class**, forming a hierarchical relationship between classes, this allows us to **reuse common logic** and to model real-world relationships.
 >
 > - **Polymorphism**: a child class can **overwrite** a method it inherited from a parent class \[it's more complex than that, but enough for our purpose].
+
+</details>
 
 #### OOP in Javascript
 
@@ -65,6 +71,7 @@ there are 3 ways to create prototypal inheritance in JavaScript:
    - the easiest way to link an object to a prototype object.
 
 </details>
+
 </details>
 
 ### Constructor Functions and the _new_ Operator
@@ -407,7 +414,8 @@ we should be careful of having the same name for the setter and the underlying m
 <summary>
 Methods that belong to the namespace and act independent of whatever object we have.
 </summary>
-static methods don't operate on any instance of the class. like the *Array.from()* method. these are methods that aren't attached to the prototype, so they can't be called from an instance. they are part of the constructor function.
+
+static methods don't operate on any instance of the class. like the _Array.from()_ method. these are methods that aren't attached to the prototype, so they can't be called from an instance. they are part of the constructor function.
 
 ```js
 Array.from(document.querySelectorAll("p")); //works
@@ -520,7 +528,7 @@ Use ES6 classes, getter / setter to make the previous challenge cleaner to look 
 
 <details>
 <summary>
-Different ways to create inheritance chains between prototypes
+Different ways to create inheritance chains between prototypes.
 </summary>
 
 so far, we looked at ways to implement inheritance between an object and it's prototype, now we will look at _'real inheritance'_ between _'real classes'_. like how other programming languages do it.
@@ -715,22 +723,197 @@ No need to use the _'new'_ keyword, worry about constructors or stuff like that,
 
 </details>
 
-### Some More Class Examples
+### Encapsulation And data Privacy
 
- <!-- <details> -->
+<details>
 <summary>
-
+How do we stop users from accessing private data?
 </summary>
 
-<!-- </details> -->
+refactoring the account objects from the earlier lectures into classes.
+using methods instead of directly touching elements. but those members can still be touched and changed,
 
-##
+```js
+class Account {
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    this.pin = pin;
+    this.movements = [];
+    this.locale = navigator.language;
+  }
+  deposit(val) {
+    this.movements.push(val);
+  }
+  withdraw(val) {
+    this.movements.push(-val);
+  }
+  approveLoan(val) {
+    return val < this.movements.reduce((a, b) => a + b, 0) / 10; //assume this works
+  }
+  requestLoan(val) {
+    if (this.approveLoan(val)) {
+      this.deposit(val);
+    }
+  }
+}
+const account1 = new Account("Jonas", "EUR", 1111);
+account1.deposit(500);
+account1.withdraw(300);
+account1.movements.push(9000); //can still do this.
+account1.approveLoan = function (val) {
+  return true;
+}; //changing the method from outside
+```
+
+encapsulation means making data and methods private, only accessible from inside the objects. this for both security reasons and to allow us to change internal code without effecting the outside code (which uses the public API).
+
+JavaScript doesn't support real encapsulation (maybe in the future it will), it only has conventions. we use an underscore to suggest that something is private, and shouldn't be changed.
+**this isn't real privacy**, and JavaScript calls this 'protected' (not like other languages that use 'protected' as an access modifier). this is a way to tell other programers not to use this method.
+
+```js
+class ProtectedMovements {
+  constructor(owner) {
+    this.owner = owner;
+    //underscore before name is convention
+    this._movements = [];
+  }
+  getMovements() {
+    return this._movements;
+  }
+}
+
+const acc1 = new ProtectedMovements("Joe");
+console.log(acc1.getMovements());
+acc1._movements.push(11); //we can still do this
+```
+
+#### Private Class Fields and Methods
+
+<details>
+<summary>
+A proposal for the future of JavaScript to implement class fields and allow true privacy.
+</summary>
+
+[Private class fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields)
+
+There is a proposal (in advanced stages) to implement class fields and support true encapsulation of data. like in other languages. this will make classes something more than synthetic sugar over constructor function.
+
+there will be different kinds of properties: public/private X field/method and also static/ non static
+
+_public fields_ are not on the prototype, they are on the object itself (the instance). they are declared outside of the constructor, and have a semi-colon, but not const or let. they can be accessed by the _'this'_ keyword.
+
+_private fields_ are what we really wanted, they are truly unaccessible from the outside. we mark them like public fields, but with the # symbol before the name. **this symbol is part of the name**, but when we try accessing it from outside, we get an error.
+
+> "Private field '#movements' must be declared in an enclosing class"
+
+it also doesn't show when we print the object in node, but does show in chrome.
+
+we want to set the _pin_ field to private, but we need to set it's value from the constructor, so we first declare it without a value as a private field, and then give it a value.
+
+_public methods_ - all the methods we used so far are public methods, nothing changed.
+
+_private methods_ - same as with private fields, we declare it with a leading # symbol to make it private. in the future it will work differently, maybe.
+
+the same four fields apply for static versions. it's weird to think about a private static method, because static methods are called without an object, but it does work for hiding implementation and for helper functions.
+
+```js
+class AccountPrivates {
+  //public fields
+  locale = navigator.language;
+  // _movements = [];
+  //private fields
+  #movements = [];
+  #pin; //no value
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    //??protected by convention??
+    //this._movements = [];
+    //this.locale = navigator.language;
+    //give value to a private field
+    this.#pin = pin; //
+  }
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      this.deposit(val);
+    }
+  }
+  getMovements() {
+    return this.#movements;
+  }
+  deposit(val) {
+    this.#movements.push(val);
+  }
+  #approveLoan(val) {
+    //do something
+    return val % 2 === 0;
+  }
+}
+
+const ben2 = new AccountPrivates("ben", "EUR", 1234);
+//console.log(ben2.#movements); //error!
+ben2.deposit(50);
+ben2.requestLoan(900);
+ben2.requestLoan(901);
+//console.log(ben.#approveLoan(700)); // error!
+console.log(ben2.getMovements());
+console.log(ben2);
+```
+
+</details>
+
+#### Chaining Method
+
+<details>
+<summary>
+Making methods chain-able.
+</summary>
+
+like with the _.filter()_ and _.map()_ functions, we can make our methods in a way that the can be chained together. this is called a 'fluent interface'. we simply change our methods to make them return the object (the _'this'_ keyword). it's used mostly for methods that set something.
+
+```js
+//ben2.deposit(60).deposit(65).requestLoan(1000).withdraw(70); // won't work for now.
+class AccountPrivatesChain {
+  //private fields
+  #movements = [];
+  #pin; //no value
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    this.#pin = pin; //
+  }
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      console.log(`loan of ${val} approved!`);
+      this.deposit(val);
+    }
+    return this;
+  }
+  getMovements() {
+    return this.#movements;
+  }
+  deposit(val) {
+    this.#movements.push(val);
+    return this;
+  }
+  #approveLoan(val) {
+    //do something
+    return val % 2 === 0;
+  }
+}
+const ben3 = new AccountPrivatesChain("ben3", "NIS", 7777);
+ben3.deposit(60).deposit(65).requestLoan(1000).deposit(70); // now it works
+console.log(ben3.getMovements());
+```
+
+</details>
 
 #### Coding Challenge #4
 
 <details>
 <summary>
-
+use ES6 classes for inheritance, use private fields.
 </summary>
 
 > Your tasks:
@@ -742,5 +925,33 @@ No need to use the _'new'_ keyword, worry about constructors or stuff like that,
 > Test data:
 >
 > - Data car 1: 'Rivian' going at 120 km/h, with a charge of 23%.
+
+</details>
+
+</details>
+
+### ES6 Classes Summary
+
+<details>
+<summary>
+a review of all the terminology relating to ES6 classes.
+</summary>
+
+- _class_ keyword to define a class.
+- _extends_ keyword to define an inheritance.
+- _public fields_ are defined outside the constructor
+- _private fields_ are defined outside the constructor and with the _#_ prefix to their name. not accessible from outside the class.
+- _static_ keyword can be applied to _public fields_ and _private fields_ to make them available only on the class, not on instances.
+- _constructor_ is a declaration for the _new operator_, can be omitted in child class that doesn't add fields.
+- _super_ keyword calls the base class constructor, must be done before anything else.
+- _instance properties_ are defined with the _'this'_ keyword, and aren't part of the prototype.
+- _public methods_ are the public facing api of the class.
+- _private methods_ are declared with _#_ prefix, and can only be used in the class.
+- _protected_ is a convection, we add an underscore to signal to other programmers not to use this method or property, but we can't enforce this.
+- _get_ is a way to make a function be called like a property, without parentheses, must be parameter-less.
+- _set_ is a way to call a function like setting a property, no parameters. one argument only, be careful of naming. used for data validation.
+- _new_ is an operator that creates an object with the constructor function.
+
+</details>
 
 </details>

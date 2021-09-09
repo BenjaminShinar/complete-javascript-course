@@ -476,3 +476,170 @@ function objectCreateInheritance() {
   console.log(jay.introduce());
 }
 objectCreateInheritance();
+
+class Account {
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    this.pin = pin;
+    this.movements = [];
+    //this.locale = navigator.language;
+  }
+  deposit(val) {
+    this.movements.push(val);
+  }
+  withdraw(val) {
+    this.movements.push(-val);
+  }
+  approveLoan(val) {
+    return true;
+  }
+  requestLoan(val) {
+    if (this.approveLoan(val)) {
+      this.deposit(val);
+    }
+  }
+}
+
+const account1 = new Account('Jonas', 'EUR', 1111);
+account1.deposit(500);
+account1.withdraw(300);
+console.log(account1);
+
+class AccountPrivates {
+  //public fields
+  //locale = navigator.language;
+  // _movements = [];
+  //private fields
+  #movements = [];
+  #pin;
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+    //??protected by convention??
+    this.#pin = pin;
+    //this._movements = [];
+    //this.locale = navigator.language;
+  }
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      this.deposit(val);
+    }
+  }
+  getMovements() {
+    return this.#movements;
+  }
+  deposit(val) {
+    this.#movements.push(val);
+  }
+  #approveLoan(val) {
+    //do something
+    return val % 2 === 0;
+  }
+}
+
+const ben2 = new AccountPrivates('ben', 'EUR', 1234);
+console.log(ben2);
+//console.log(ben2.#movements); //error!
+ben2.deposit(50);
+ben2.requestLoan(900);
+ben2.requestLoan(901);
+
+//console.log(ben.#approveLoan(700)); // error!
+console.log(ben2.getMovements());
+//ben2.deposit(60).deposit(65).requestLoan(1000).withdraw(70); // won't work for now.
+
+class AccountPrivatesChain {
+  //private fields
+  #movements = [];
+  #pin; //no value
+  constructor(owner, currency, pin) {
+    this.owner = owner;
+    this.currency = currency;
+
+    this.#pin = pin; //
+  }
+  requestLoan(val) {
+    if (this.#approveLoan(val)) {
+      this.deposit(val);
+    }
+    return this;
+  }
+  getMovements() {
+    return this.#movements;
+  }
+  deposit(val) {
+    this.#movements.push(val);
+    return this;
+  }
+  #approveLoan(val) {
+    //do something
+    return val % 2 === 0;
+  }
+}
+const ben3 = new AccountPrivatesChain('ben3', 'NIS', 7777);
+ben3.deposit(60).deposit(65).requestLoan(1000).deposit(70); // won't work for now.
+console.log(ben3.getMovements());
+
+const codingChallenge4 = function () {
+  console.log('Challenge #4');
+  class CarCl {
+    speed;
+    make;
+    constructor(make, speed) {
+      this.make = make;
+      this.speed = speed;
+    }
+    #changeSpeed = function (diff) {
+      this.speed += diff;
+      console.log(`${this.make} is driving at ${this.speed}`);
+    };
+    accelerate = function () {
+      this.#changeSpeed(10);
+      return this;
+    };
+    break = function () {
+      this.#changeSpeed(-5);
+      return this;
+    };
+    get SpeedUS() {
+      return this.speed / 1.6;
+    }
+    set SpeedUS(usSpeed) {
+      this.speed = usSpeed * 1.6;
+      return this;
+    }
+  }
+  class EVCl extends CarCl {
+    #charge;
+    constructor(make, speed, charge) {
+      super(make, speed);
+      this.#charge = charge;
+    }
+    chargeBattery = function (chargeTo) {
+      this.#charge = chargeTo;
+      return this;
+    };
+    accelerate = function () {
+      this.#charge -= 1;
+      this.speed += 20;
+      console.log(
+        `${this.make} is driving at ${this.speed} with a charge of ${
+          this.#charge
+        }%`
+      );
+      return this;
+    };
+  }
+
+  //adding the new methods to the EV prototype.
+
+  //override!
+  const riv = new EVCl('Rivian', 120, 23);
+  riv.accelerate().break(); //use same break;
+  riv.accelerate().chargeBattery(70).accelerate();
+  const bmw = new CarCl('BMW', 60);
+  bmw.accelerate().break();
+};
+
+codingChallenge4();
