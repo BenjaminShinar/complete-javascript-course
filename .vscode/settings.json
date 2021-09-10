@@ -1,6 +1,8 @@
 {
-  "cSpell.words": ["instanceof", "trunc", "typeof", "unshift"],
+  "cSpell.words": ["Geolocation", "instanceof", "trunc", "typeof", "unshift"],
   "cSpell.ignoreWords": [
+    "Mappity",
+    "Mapty",
     "afterbegin",
     "afterend",
     "arrow",
