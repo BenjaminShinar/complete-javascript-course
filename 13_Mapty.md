@@ -1,9 +1,8 @@
 ## Mapty App: OOP, Geolocation, External Libraries
 
 <summary>
-</summary>
-
 Geo-location, third party libraries, project planning.
+</summary>
 
 an application that shows a map, loaded from 3rd party api, the location, from the browser geo-location, keeping track of workout information.
 adding marks, jumping to location, and stuff like that. information is kept through out sessions.
@@ -318,9 +317,320 @@ inputType.addEventListener("change", function (e) {
 
 ### Project Architecture
 
-<!-- <details> -->
+<details>
 <summary>
-
+Refactoring our code into classes and objects. special considerations to binding events
 </summary>
 
-<!-- </details> -->
+we now consider the architecture of the project, there are some different approaches, but in this project, we will use OOP with classes as our focal idea.
+
+> - "where and how to store the data?"
+> - "what are our functionalities?"
+
+what is our application about? where does the data comes from, what types of data?
+
+The workout classes, base class and two child classes (running and cycling). we also have the other events, so we will put them on the general App object. we can use the separation to protect the data from changes.
+
+![Class Architecture](15-Mapty/starter/Mapty-architecture-part-1.png)
+
+we start by implementing the App object. don't forget the _'this'_ keyword. and we need to call the methods and constructor. we move all the stuff we want into the class as private fields.
+
+when we pass a function callback, we need so manually bind the object with _.bind(this)_. otherwise, the function is called on the element that called the event.
+
+we set the event handlers inside the constructor.
+
+```js
+  _getPosition() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        this._loadMap.bind(this),
+        function () {
+          alert('could not get your position!');
+        }
+      );
+    }
+  }
+```
+
+</details>
+
+### Managing Workout Data
+
+<details>
+<summary>
+The workout class hierarchy, creating an object, rendering a marker and the sidebar. 
+</summary>
+
+continuing with our oop architecture, we want to create the classes for workouts. we start with the baseClass Workout, which has the common data. in larger projects, we would make the fields, private and provide getters.
+
+the data that isn't set by the constructor cab be declared as a class field. in the real worlds, we would get Unique ID from a library or something, but for this example, we will take the digits from the dateTime Objects.
+
+```js
+class Workout {
+  date = new Date();
+  id = this.date.getTime();
+```
+
+we add methods to calculate speed and pace for each of the derived classes. we could probably also use a getter instead.
+
+for the markers:
+
+- [ ] we need to get data from the form.
+- [ ] validate the data.
+- [ ] create the appropriate workout object, and add it to the workout array.
+- [ ] render the workout on the map and in the list
+- [ ] hide the form and clear the fields.
+
+the type is stored inside the html, as well as the other properties, which are string (so we need to convert them). there are two 'if' statements because that's how modern JavaScript might look.
+
+```js
+const type = inputType.value;
+const distance = Number(inputDistance.value);
+const duration = Number(inputDuration.value);
+if (type === "running") {
+  const cadence = Number(inputCadence.value);
+}
+if (type === "cycling") {
+  const elevation = Number(inputElevation.value);
+}
+```
+
+we check the validity (positive numbers), and if they're not, we return. and we can add an alert. (but i won't do this). we can use the _.every()_ array method together with a rest operator in a function to create a varArgs function.
+
+```js
+const validateNumbers = (...inputs) => {
+  return inputs.every((inp) => Number(inp) && inp > 0);
+};
+```
+
+we set the css class with the correct type.
+
+#### Rendering Workout Data Sidebar
+
+<details>
+<summary>
+Adding an html element to the sidebar.
+</summary>
+
+we want a list of the workouts on the sidebar, with a title, data, and some icons.
+
+we make ourselves a new method that takes care of it, by adding an html object to the form to the unordered list.
+
+the pre-built html classes look like this:
+
+```html
+<li class="workout workout--running" data-id="1234567890">
+  <h2 class="workout__title">Running on April 14</h2>
+  <div class="workout__details">
+    <span class="workout__icon">🏃‍♂️</span>
+    <span class="workout__value">5.2</span>
+    <span class="workout__unit">km</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">⏱</span>
+    <span class="workout__value">24</span>
+    <span class="workout__unit">min</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">⚡️</span>
+    <span class="workout__value">4.6</span>
+    <span class="workout__unit">min/km</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">🦶🏼</span>
+    <span class="workout__value">178</span>
+    <span class="workout__unit">spm</span>
+  </div>
+</li>
+
+<li class="workout workout--cycling" data-id="1234567891">
+  <h2 class="workout__title">Cycling on April 5</h2>
+  <div class="workout__details">
+    <span class="workout__icon">🚴‍♀️</span>
+    <span class="workout__value">27</span>
+    <span class="workout__unit">km</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">⏱</span>
+    <span class="workout__value">95</span>
+    <span class="workout__unit">min</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">⚡️</span>
+    <span class="workout__value">16</span>
+    <span class="workout__unit">km/h</span>
+  </div>
+  <div class="workout__details">
+    <span class="workout__icon">⛰</span>
+    <span class="workout__value">223</span>
+    <span class="workout__unit">m</span>
+  </div>
+</li>
+```
+
+html breakdown:
+
+- the li tag has 'workout' general class and a _specific 'workout--${type}' class_.
+- the _workout title_ is simply a different name.
+- the four 'workout\_\_details' are not exactly identical.
+  1. the icon is different for running and cycling.
+  2. duration is the same.
+  3. the pace/speed unit is different
+  4. final row is either cadence or elevation.
+
+we will need to create each element accordingly. string templates are our friends.
+
+it will be better to create each div elements from a function.
+
+we insert the new element as a sibling.
+
+```js
+const html = `<div> ...</div>`;
+form.insertAdjacentHTML("afterend", html);
+```
+
+we also want to hide list when the form is showing. there is a transition that we want not to happen so we play with the style.
+
+```js
+form.style.display = "none";
+form.classList.add("hidden");
+setTimeout(() => (form.style.display = "grid"), 1000);
+```
+
+</details>
+
+#### Move To Marker On Click
+
+<details>
+<summary>
+finding the marker and moving to it.
+</summary>
+
+when we click on an element in the side bar, we want to jump to that position.
+
+we should use a delegate event,attach the event handler to a parent handler and if an event happens, we will take the closest (reverse query selection to get get the parent) workout element.
+if the user clicked on something else, we won't find a match!
+
+we use the id and now we can match the element inside the workouts array.
+
+```js
+    containerWorkouts.addEventListener('click', this.moveToWorkout.bind(this));
+
+  moveToWorkout(e) {
+    const workout = e.target.closest('.workout');
+        if (clickedWorkout) //guard
+    {
+      console.log(clickedWorkout);
+      const id = Number(clickedWorkout.dataset.id);
+      console.log(id);
+      const selectedWorkout = this.#workouts.find(wk => wk.id === id);
+
+      if (selectedWorkout) {
+        console.log(selectedWorkout);
+        this.#map.setView(selectedWorkout.coords, App.#mapZoomLevel, {
+          animate: true,
+          pan: {
+            duration: 1,
+          },
+        });
+    }
+  }
+```
+
+we use a method from the leafLet library to move, this is the _.setView(coords,zoomLevel)_ method.m which can also take an object of options.
+
+a final request is to count the clicks on each workout (not displaying it).
+
+</details>
+
+</details>
+
+### Working with Local Storage
+
+<details>
+<summary>
+Using the local storage to make the data persist across sessions. this has so many issues!
+</summary>
+
+[Local Storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+
+storing the workout in the local storage.
+
+localeStorage is an api the browser gives us. it's a key-value pairs storage (string,string).
+
+we use JSON.Stringify() to convert objects into json. **but there is a problem!**
+
+```js
+localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+```
+
+localStorage is blocking, so we shouldn't store large amount of data on it.
+we can see the local storage in the development tools under the 'application' tab.
+
+to reload the data, we take the string from the local storage and try to use it.
+
+```js
+const storedText = localStorage.getItem("workouts");
+const storedWorkouts = JSON.parse(storedText);
+if (storedWorkouts) {
+  console.log(storedWorkouts);
+  this.#workouts = storedWorkouts;
+  this.#workouts.forEach((wk) => {
+    console.log(wk);
+    //neither of them work for me
+    // this.#renderWorkoutList(wk);
+    // this.#renderWorkoutMarker(wk);
+  });
+}
+```
+
+sadly, this doesn't work because we are trying to do things we stuff that don't exist yet, like the map object.
+
+**json stringify doesn't parse objects into classes**. the object prototype chain is lost! the prototype is Object!
+
+I had to play with
+
+```js
+if (wk.elevation) {
+  Object.setPrototypeOf(wk, Cycling.prototype);
+} else {
+  Object.setPrototypeOf(wk, Running.prototype);
+}
+```
+
+and even then the Date property was out! this was so stupid! why is this like this!
+
+another thing we can do is remove the local storage.
+
+```js
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
+  }
+```
+
+now we can update the project architecture.
+
+![updated architecture](15-Mapty/starter/Mapty-architecture-final.png)
+
+</details>
+
+### Final Considerations
+
+<details>
+<summary>
+Possible Additions to the project.
+</summary>
+
+things we can do on our own.
+
+1. ability to remove/edit a workout.
+2. sort the workout by some criteria.
+3. rebuild the running and cycling objects. fix the problem with the click!
+4. give out better error messages!
+5. position the map so that it shows all the workouts (very hard, leaflet library documentation)
+6. ability to draw lines and shapes (not just points).
+7. get geocode location the coordinates to get the real location (description).
+8. display the weather for the workout time and place.
+
+</details>
