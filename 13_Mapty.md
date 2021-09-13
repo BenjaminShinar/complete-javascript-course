@@ -1,5 +1,6 @@
 ## Mapty App: OOP, Geolocation, External Libraries
 
+<details>
 <summary>
 Geo-location, third party libraries, project planning.
 </summary>
@@ -633,4 +634,5 @@ things we can do on our own.
 7. get geocode location the coordinates to get the real location (description).
 8. display the weather for the workout time and place.
 
+</details>
 </details>

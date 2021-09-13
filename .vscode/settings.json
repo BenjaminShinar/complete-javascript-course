@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["Geolocation", "instanceof", "trunc", "typeof", "unshift"],
+  "cSpell.words": [
+    "Geolocation",
+    "instanceof",
+    "requset",
+    "trunc",
+    "typeof",
+    "unshift"
+  ],
   "cSpell.ignoreWords": [
     "Mappity",
     "Mapty",
