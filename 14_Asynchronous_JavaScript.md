@@ -207,7 +207,7 @@ TCP/IP breaks the data into small packets and then reassembles them, each packet
 
 ### Promises
 
-<!-- <details> -->
+<details>
 <summary>
 A promise is a container that will hold the result of an asynchronous operation.
 </summary>
@@ -215,6 +215,21 @@ A promise is a container that will hold the result of an asynchronous operation.
 [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 ES6 introduces provided a 'promise' object, which is supposed to stop the callback hell issue.
+
+- _fetch(url)_ - create a promise.
+- _.then(func, func)_ - what to do with the result, implicitly creates another promise.
+- _.catch(func)_ - handle rejected promises.
+- _.finally(func)_ - will always be called, no matter if successful or not.
+- throw(error) - throw an error objects, this will be caught and reject the promise.
+- _Promise.resolve()_ - a resolved promise object.
+- _Promise.reject()_ - a rejected promise object.
+
+#### The Fetch Api
+
+<details>
+<summary>
+fetch is a short hand way to create a promise.
+</summary>
 
 we now have fetch and promises.
 
@@ -241,6 +256,8 @@ the promise objects are time sensitive, they have lifecycle and can be in a diff
 
 we handle the different states. a promise is only settled once, it cannot revert back.
 getting a result is called 'consuming it', the fetch API builds the promise for us.
+
+</details>
 
 #### Consuming Promises
 
@@ -297,24 +314,144 @@ a common mistake is to insert the _.then()_ method inside the nested earlier _.t
 
 #### Handling Rejected Promises
 
-<!-- <details> -->
+<details>
 <summary>
+handling rejected promises - .catch(), finally().
+</summary>
+so far, we worked under the assumption that our ajax calls resolve successfully, this isn't always true.
+the fetch promise can only be rejected when the user loses the internet connection, 
+we can simulate this by opening the network tab in the browser and changing the 'throttling' to offline. but for our purposes, we want to first load the page, close the connection and then send the request, we do this by adding a button that sends the request.
 
+**this didn't work for me until i disabled the cache**
+
+we have an uncaught rejection in the promise.
+we can handle rejection by adding a 2nd callback function to the _.then()_ function.
+
+```js
+fetch("https://restcountries.eu/rest/v2/name/turkey")
+  .then(
+    (response) => response.json(),
+    (err) => alert(err) //error callback
+  )
+  .then((r) => console.log(r));
+```
+
+but this means we need to add an error handler callback inside each _.then()_, we can avoid this by having a _.catch()_ method at the end of the chain, this will handle all error in the chain.
+
+```js
+fetch("https://restcountries.eu/rest/v2/name/turkey")
+  .then((response) => response.json())
+  .then((r) => console.log(r))
+  .catch((err) => console.error(err));
+```
+
+let's also create a function to render an error
+
+```js
+const renderError = function (msg) {
+  countriesContainer.insertAdjacentText("beforeend", msg);
+  countriesContainer.style.opacity = 1;
+};
+```
+
+the error is a real JS object. all errors have _.message_ property. we will go into this
+
+one last method of promises is _.finally()_ which takes a callback, and is executed no matter what (success or reject), we wll use it to fade in the container (which we always do)
+
+```js
+btn.addEventListener("click", () => {
+  fetch("https://restcountries.eu/rest/v2/name/turkey")
+    .then((response) => response.json())
+    .then((data) => createCard(data[0]))
+    .catch((err) => {
+      console.log(`got error! console ${err.message}`);
+      renderError(err.message);
+    })
+    .finally(() => (countriesContainer.style.opacity = 1));
+});
+```
+
+our final case is when the api finishes, but that we didn't get what we want. this is not a reject, a 404 status code is still a fulfilled promise for the fetch.
+
+</details>
+
+#### Throwing Errors Manually
+
+<details>
+<summary>
+creating errors, throwing them. identifying them.
 </summary>
 
-<!-- </details> -->
+[The Error object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) and [Throwing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw)
 
-<!-- </details> -->
+this time, we will fix the issue of getting a 404 status code in our promise. we can look at our response object, it has a _.ok_ property which is boolean, and a _.statusCode_, which is a number, we can check this ourself and create a manual error.
 
-### Behind the Scenes: The Event Loop
+this is done by using an Error object. which we need to throw with the _throw_, which rejects the promise, this propagates upwards until the _.catch()_ clause.
 
-#### The Event Loop in Practice
+```js
+const getCountryWithPromiseAndErrorsStatusCode = function (country) {
+  fetch(`https://restcountries.eu/rest/v2/name/${country}`)
+    .then((response) => {
+      console.log(response);
+      if (!response.ok) {
+        throw new Error(`country not found! ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => createCard(data[0]))
+    .catch((err) => {
+      console.error(`got error! console ${err.message}`);
+      renderError(err.message);
+    })
+    .finally(() => (countriesContainer.style.opacity = 1));
+};
+```
+
+but we can have an error in each of those callbacks, what do we do? do we copy then error handling into each of the functions?
+
+lets make ourself an utility function,
+
+```js
+const getJson = function (url, errorMsg = "Something Went Wrong") {
+  return fetch(url).then((response) => {
+    if (!response.ok) {
+      throw new Error(`${errorMsg} - ${response.status} error!`);
+    }
+    return response.json();
+  });
+};
+```
+
+but when there is no neighbors, we return, but then we get an error.we can see this in action if we try using australia. we can instead make our own error message for this case.
+
+```js
+const getCountryWithPromiseAndErrorsStatusCode2 = function (country) {
+  getJson(
+    `https://restcountries.eu/rest/v2/name/${country}`,
+    "Country not found!"
+  )
+    .then((data) => {
+      createCard(data[0]);
+      const neighbor = data[0].borders[0];
+      if (!neighbor) throw new Error("no neighbors!");
+      return getJson(URLS.code + neighbor);
+    })
+    .then((data) => createCard(data, "neighbour"))
+    .catch((err) => {
+      console.error(`got error! ${err.message}`);
+      renderError(err.message);
+    })
+    .finally(() => (countriesContainer.style.opacity = 1));
+};
+```
+
+</details>
 
 #### Coding Challenge #1
 
 <details>
 <summary>
-
+working with API, chaining promises, etc..
 </summary>
 
 > In this challenge you will build a function 'whereAmI' which renders a country only based on GPS coordinates. For that, you will use a second API to geocode coordinates. So in this challenge, you’ll use an API on your own for the first time.
@@ -341,11 +478,233 @@ a common mistake is to insert the _.then()_ method inside the nested earlier _.t
 
 </details>
 
+</details>
+
+### Behind the Scenes: The Event Loop
+
+<details>
+<summary>
+Better understanding of the event loop. the callback queue and the micro tasks queue.
+</summary>
+
+let's review the JavaScript runtime again
+an JavaScript engine with heap and call stack, web Apis, event Loop with callback queue.
+
+JavaScript only has one thread of execution, there is no multi-threading.
+
+once the call stack is empty (except for the _global execution context_), the event loop takes elements from the callback queue and pushes them onto the call stack.
+
+> Concurrency Model: how JavaScript handles multiple tasks happening at the same time.
+
+so how does asynchronous code executes in a non blocking way with only one thread of execution?
+
+```js
+const el =document.querySelector('img');
+el.src ='dog.jpg';
+el.addEventListener('load',()=> el.classList.add('fadeIn'));
+
+fetch('https://someurl.com/api')
+.then(res=> console.log(res);)
+```
+
+the webAPI have their own runtime environment, it's not in the JavaScript call stack, registering an event lister is actually something that we do to the webAPI environment.
+when the image finishes loading,the event is emitted, and the webAPI pushes the callback function to the callback queue. for timers, there can be a delay, depending on how much work there is to do between the time the the event was emitted and the callback function pushed onto the callback queue, and when it was finally picked up by the event loop to be run in the call stack. Dom events aren't necessarily asynchronous, but they still use the callback queue.
+
+each time the call stack is empty (except for the global execution context), the event loop 'ticks' and pushes a callback from the callback queue onto the stack.
+
+JavaScript doesn't have any concept of time, all asynchronous behavior comes from the webAPIs together with the event loop.
+
+promises work in a slightly different way, they don't go into the callback queue, they have a special queue just for themselves, it's called 'micro-tasks queue' which has **priority** over the callback queue. the micro task queue can keep pushing onto itself, and therefore starve the callback queue. this is bad.
+
+there are also microTasks from objects other than promises, but that's for another time.
+
+#### The Event Loop in Practice
+
+<details>
+<summary>
+Showing the order of execution.
+</summary>
+
+let's see this in our code. first, we can see that the micro-tasks queue has priority over the callback queue. and of course, the global context has to finish it's first one before the event loop 'tick'
+
+we use the _Promise.Resolve()_ to demonstrate this:
+
+```js
+console.log("test event loop start");
+setTimeout(() => console.log("0 sec timer"), 0); //call after zero seconds, push into the callback queue
+Promise.resolve("resolved promise!").then((d) => console.log(d)); //pushed into the micro-task queue.
+console.log("test end");
+```
+
+> - test start
+> - test end
+> - _event loop tick_
+> - resolved promise
+> - _event loop tick_
+> - 0 sec timer
+> - _event loop tick_
+
+now lets show that a timer waits for the promise to finish. even if we say zero seconds, it is delayed until the promise ends.
+
+```js
+setTimeout(() => console.log("0 sec timer2"), 0);
+
+Promise.resolve("resolved 2").then((res) => {
+  for (let i = 0; i < 10 ** 7; ++i) {
+    //waste time
+  }
+  console.log(res);
+});
+```
+
+</details>
+
+</details>
+
+### Building A Simple Promise
+
+<details>
+<summary>
+Using promises instead of callbacks.
+</summary>
+
+let's build our own promise, based on the lottery ticket example.
+the Promise constructor takes a function, called an executor function, this function has resolve and reject as arguments. what we pass to the 'resolve' function is the argument that will be passed to the _.then()_ callback function, and the 'reject' will be passed to the _.catch()_ clause, or the 2nd callback function of the _.then()_.
+
+```js
+const lotteryPromise = new Promise(function (resolve, reject) {
+  if (Math.random() > 0.5) {
+    resolve("The promise was resolved! you won!");
+  } else {
+    reject("The promise was rejected! you lost!");
+  }
+});
+lotteryPromise.then((x) => console.log(x)).catch((err) => console.error(err));
+```
+
+if we want to make this asynchorunse, we need to add a timeout,
+
+```js
+function ourOwnPromise() {
+  const lotteryPromise = new Promise(function (resolve, reject) {
+    setTimeout(() => {
+      if (Math.random() > 0.5) {
+        resolve("The promise was resolved! you won!");
+      } else {
+        reject("The promise was rejected! you lost!");
+      }
+    }, 1500);
+  });
+  lotteryPromise.then((x) => console.log(x)).catch((err) => console.error(err));
+}
+```
+
+in real life, we usually just consume promises, at most we can wrap callback function into promise objects, something called 'promisifing'.
+
+```js
+const wait = function (seconds) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, seconds * 1000);
+  });
+};
+
+wait(5)
+  .then(() => {
+    console.log("I waited 5 seconds");
+    return wait(2);
+  })
+  .then(() => console.log("I waited for 2 seconds"));
+```
+
+so instead of the earlier nested set timeout form before, we can use our promisified chain.
+
+```js
+setTimeout(() => {
+  console.log("1 second passed!");
+  setTimeout(() => {
+    console.log("2 second passed!");
+    setTimeout(() => {
+      console.log("3 second passed!");
+      setTimeout(() => {
+        console.log("4 second passed!");
+      }, 1000);
+    }, 1000);
+  }, 1000);
+}, 1000);
+```
+
+is changed into this, which looks slightly better?
+
+```js
+wait(1)
+  .then(() => {
+    console.log("1 second passed");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("2 second passed");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("3 second passed");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("4 second passed");
+    return wait(1);
+  });
+```
+
+if we want fullfilled or a rejected promise, we can static methods
+
+```js
+Promise.resolve("abc");
+Promise.reject("dsa");
+```
+
+#### Promisifying the Geo-location API
+
+<details>
+<summary>
+changing our previous work to something else.
+</summary>
+
+let's promisify our geo-location api from the mapity project..
+we used callbacks
+
+```js
+navigator.geolocation.getCurrentPosition(
+  (position) => console.log(position),
+  (err) => console.error(err)
+);
+```
+
+now we move to promises.
+
+```js
+const promisifiedGeoLocation = function () {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+promisifiedGeoLocation().then((res) => console.log(res));
+```
+
+and lets advance our 'whereAmI' method from the challenge. the result of calling 'fetch()' is a promise.
+
+object destructuring. renaming latitude to lat,
+
+```js
+const { latitude: lat, longitude: lng } = res.coords;
+```
+
+</details>
+
 #### Coding Challenge #2
 
 <details>
 <summary>
-
+Chaining more and more promises together.
 </summary>
 
 > For this challenge you will actually have to watch the video! Then, build the image loading functionality that I just showed you on the screen.
@@ -355,17 +714,22 @@ a common mistake is to insert the _.then()_ method inside the nested earlier _.t
 >
 > PART 1
 >
-> 1.  Create a function 'createImage' which receives 'imgPath' as an input.
->     This function returns a promise which creates a new image (use document.createElement('img')) and sets the .src attribute to the provided image path.
-> 2.  When the image is done loading, append it to the DOM element with the
->     'images' class, and resolve the promise. The fulfilled value should be the
->     image element itself. In case there is an error loading the image (listen for the'error' event), reject the promise.
-> 3.  If this part is too tricky for you, just watch the first part of the solution.
+> 1. Create a function 'createImage' which receives 'imgPath' as an input. This function returns a promise which creates a new image (use document.createElement('img')) and sets the .src attribute to the provided image path.
+> 2. When the image is done loading, append it to the DOM element with the 'images' class, and resolve the promise. The fulfilled value should be the image element itself. In case there is an error loading the image (listen for the'error' event), reject the promise.
+> 3. If this part is too tricky for you, just watch the first part of the solution.
 >
-> PART 2 4. Consume the promise using .then and also add an error handler 5. After the image has loaded, pause execution for 2 seconds using the 'wait' function we created earlier. 6. After the 2 seconds have passed, hide the current image (set display CSS property to 'none'), and load a second image (Hint: Use the image element returned by the 'createImage' promise to hide the current image. You will need a global variable for that). 7. After the second image has loaded, pause execution for 2 seconds again. 8. After the 2 seconds have passed, hide the current image.
+> PART 2
+>
+> 4. Consume the promise using .then and also add an error handler
+> 5. After the image has loaded, pause execution for 2 seconds using the 'wait' function we created earlier.
+> 6. After the 2 seconds have passed, hide the current image (set display CSS property to 'none'), and load a second image (Hint: Use the image element returned by the 'createImage' promise to hide the current image. You will need a global variable for that).
+> 7. After the second image has loaded, pause execution for 2 seconds again.
+> 8. After the 2 seconds have passed, hide the current image.
 >
 > Test data: Images in the img folder.
 > Test the error handler by passing a wrong image path. Set the network speed to “Fast 3G” in the dev tools Network tab, otherwise images load too fast.
+
+</details>
 
 </details>
 
@@ -392,7 +756,7 @@ a common mistake is to insert the _.then()_ method inside the nested earlier _.t
 > 5. Add the 'parallel' class to all the images (it has some CSS styles).
 >
 > Test data Part 2:
-> ['img/img-1.jpg', 'img/img-2.jpg', 'img/img3.jpg'].
+> ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg'].
 >
 > To test, turn off the 'loadNPause' function.
 
