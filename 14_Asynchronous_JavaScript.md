@@ -1,7 +1,8 @@
 ## Asynchronous JavaScript: Promises, Async/Await, and AJAX
 
+<details>
 <summary>
-//fix me!
+Fetching, promises, asynchronous JavaScript code, callbacks, chaining promises together, async/await. try-catch-blocks.
 </summary>
 
 Asynchronous JavaScript deals with long running tasks that run in the background, most commonly: fetching data from remote servers (ajax calls).
@@ -10,6 +11,24 @@ Asynchronous JavaScript deals with long running tasks that run in the background
 
 > **CORS** - Cross Origin Resource Sharing.
 > we need Cors if we want to use the api from code.
+
+[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+
+- _fetch(url)_ - create a promise.
+- _.then(func, func)_ - what to do with the result, implicitly creates another promise.
+- _.catch(func)_ - handle rejected promises.
+- _.finally(func)_ - will always be called, no matter if successful or not.
+- throw(error) - throw an error objects, this will be caught and reject the promise.
+
+Promise static Methods
+
+- _Promise.resolve()_ - a resolved promise object.
+- _Promise.reject()_ - a rejected promise object.
+- **Promise Combinators** - take an array of promises and return a single promise that runs in parallel.
+  - _Promise.all([promise, promise])_ - if one rejects, the entire promise rejects.
+  - _Promise.race([promise, promise])_ - is settled as soon as one promise is settled (rejected of fulfilled)
+  - _Promise.allSettled([promise, promise])_ - returns all promises when they're settles, even if rejected, no short circuiting. _ES22_.
+  - _Promise.any([promise, promise])_ - returns the first successful promise, will reject only if all of them fail. ES21.
 
 ### Asynchronous JavaScript: AJAX and APIs
 
@@ -177,7 +196,7 @@ using the url from earlier:
 
 we can divide it into parts:
 protocol: "http" (or https,or others!)
-domain name: "restcountries.eu"
+domain name: "restCountries.eu"
 resource: "/rest/v2/alpha/code"
 
 the domain name is just a nice name for us to read, the real address is provided by DNS.
@@ -212,17 +231,7 @@ TCP/IP breaks the data into small packets and then reassembles them, each packet
 A promise is a container that will hold the result of an asynchronous operation.
 </summary>
 
-[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-
 ES6 introduces provided a 'promise' object, which is supposed to stop the callback hell issue.
-
-- _fetch(url)_ - create a promise.
-- _.then(func, func)_ - what to do with the result, implicitly creates another promise.
-- _.catch(func)_ - handle rejected promises.
-- _.finally(func)_ - will always be called, no matter if successful or not.
-- throw(error) - throw an error objects, this will be caught and reject the promise.
-- _Promise.resolve()_ - a resolved promise object.
-- _Promise.reject()_ - a rejected promise object.
 
 #### The Fetch Api
 
@@ -655,7 +664,7 @@ wait(1)
   });
 ```
 
-if we want fullfilled or a rejected promise, we can static methods
+if we want fulfilled or a rejected promise, we can static methods
 
 ```js
 Promise.resolve("abc");
@@ -733,11 +742,307 @@ Chaining more and more promises together.
 
 </details>
 
+### Async Await
+
+<details>
+<summary>
+a synthetic sugar over promises that makes our code cleaner and easier to read. we mark our functions as async to make them run in background.
+</summary>
+
+there is a different way to consume promises, this is called _async await_. we add the 'async' modifier to the function. it runs in the background and returns a promise. an _async_ function contains the _await_ keyword. this will stop the code execution until the promise is completed. because we are in an _async_ function, we don't block the main execution context, our code looks like regular code, but behaves asynchronously.
+
+this is still promises and 'then', but we have cleaner syntax.
+
+```js
+const whereAmIAsync = async function (country) {
+  const res = await fetch(`https://restcountries.eu/rest/v2/name/${country}`);
+  console.log(res);
+};
+console.log("before async call");
+whereAmIAsync("india");
+console.log("after async call"); //will be displayed before the async function.
+```
+
+and now we can recreate the function itself, calling _await_ as many times as we want. without callback functions or chaining.
+
+```js
+const whereAmIAsync = async function (country) {
+  const res = await fetch(`https://restcountries.eu/rest/v2/name/${country}`);
+  const data = await res.json();
+  createCard(data[0]);
+};
+
+const whereAmIAsyncNeighbors = async function (country) {
+  const res = await fetch(URLS.name + country);
+  const data = await res.json();
+  createCard(data[0]);
+  const neighbor = data[0].borders[0];
+  if (neighbor) {
+    const res2 = await fetch(URLS.code + neighbor);
+    const data2 = await res2.json();
+    createCard(data2, "neighbor");
+  }
+};
+
+const whereAmIAsyncPosition = async function () {
+  const pos = await getMyPosition();
+  const { latitude: lat, longitude: lng } = pos.coords;
+  const positionResponse = await fetch(URLS.bigData(lat, lng));
+  const positionData = await positionResponse.json();
+  await whereAmIAsyncNeighbors(positionData.countryName);
+};
+```
+
+it's easy to forget the _.json()_ part. we should probably simplify the getJson utility function.
+
+```js
+const getAsyncJson = async function (url) {
+  const response = await fetch(url);
+  const data = await response.json();
+  return data;
+};
+```
+
+#### Try Catch Blocks
+
+<details>
+<summary>
+Try-Catch-Finally blocks to handle errors.
+</summary>
+
+when we changed our chain of promises to async/await functions, we dropped the error handling behavior, let's bring it back.
+
+we can't attach the '.catch()' block anymore, but we can use 'try-catch' blocks. this isn't unique for asynchronous JavaScript, and can be used anywhere in the language. we wrap our code with a try-catch-finally block, and handle any errors inside it.
+
+```js
+try {
+  let y = 1;
+  const x = 2;
+
+  x = 9;
+} catch (e) {
+  // catching the error
+  console.error(e);
+} finally {
+  console.log("finally block");
+}
+const z = 10;
+z = 5; //uncaught type error!
+```
+
+with our real code, we can use it to catch errors from asynchronous functions. but because promises are only rejected when the connection is offline, we need to create the errors ourselves. again, by using _throw_ with an error object.
+
+```js
+const whereAmIAsyncTryCatch = async function (country) {
+  try {
+    const data = await getAsyncJson(URLS.name + country);
+    if (!data.ok) throw new Error(`status code is ${data.status}`);
+    createCard(data[0]);
+  } catch (err) {
+    console.error("error is", err.message);
+  } finally {
+    console.log("function finished!");
+  }
+};
+```
+
+errors that were 'thrown' propagate up the chain until they meet a catch block. if we aren't using the error, we can drop the parentheses
+
+```js
+try {
+} catch {
+  //do something without the error
+} finally {
+}
+```
+
+</details>
+
+#### Returning Values From Async Functions
+
+<details>
+<summary>
+if we have a async function we wish to use the return value, we go back to .then() or callback functions. we can also re-throw errors.
+</summary>
+
+but what if we want to return a value from an async function?
+we get a promise, not a value. in the console we see
+"Promise{\<pending>}" and not the data.
+we can use the _.then()_ syntax instead,
+
+```js
+const asyncValue = async function (x) {
+  return x * 2;
+};
+const foo = async function (x) {
+  const v = await asyncValue(x);
+  return `v is ${v}`;
+};
+
+console.log(foo(99));
+foo(115).then((x) => console.log(x));
+```
+
+but it's not perfect, the promise is still fulfilled, we need to rethrow the error.
+when we have a nested block with promises, we can throw the same error again.
+
+```js
+try {
+  throw new Error("some error");
+} catch (e) {
+  console.error(e); //log error
+  throw e; //pass it upwards
+}
+```
+
+there is a problem that we mix styles, we can't use 'await' outside an 'async' function, so we need to use _.then()_. however, we can create IIFE that are async.
+
+1. adding the async keyword.
+2. not forgetting to wrap the function definition in parentheses to make it an expression.
+
+```js
+(async function () {
+  //body
+})(); //invoke
+```
+
+this happens a lot in the real time, async function calling other async functions and returning data from them
+
+</details>
+</details>
+
+### Promise Combinators
+
+<details>
+<summary>
+Promise Combinators, launching several promises at once.
+</summary>
+
+Running Promises in Parallel
+
+let's create a function that takes three countries, and gets the capital cities into an array.
+this basic structure works, but is inefficient. we call them sequently, despite them having no dependencies on one another. why do we need to wait for each call to finish before doing the next one?
+
+we can see this in the network tab.
+
+```js
+const get3CountriesSeq = async function (c1, c2, c3) {
+  try {
+    const [c1Data] = await getAsyncJson(URLS.name + c1);
+    const [c2Data] = await getAsyncJson(URLS.name + c2);
+    const [c3Data] = await getAsyncJson(URLS.name + c3);
+    console.log([c1Data.capital, c2Data.capital, c3Data.capital]);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+get3CountriesSeq("germany", "france", "ireland");
+```
+
+it would be better to run all tasks in parallel, this can be done with _Promise.all()_ static method, which takes an array of promises and return a combined promise.
+
+```js
+const get3CountriesPar = async function (c1, c2, c3) {
+  try {
+    const data = await Promise.all([
+      getAsyncJson(URLS.name + c1),
+      getAsyncJson(URLS.name + c2),
+      getAsyncJson(URLS.name + c3),
+    ]);
+    console.log(data.map((d) => d[0].capital));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+get3CountriesPar("germany", "france", "ireland"); // ok
+get3CountriesPar("germany", "franceAndDance", "ireland"); // one rejects, so error
+```
+
+if one promise rejects, the combined promise rejects as well.
+
+#### Promise Combinators: race,allSettled, Any
+
+<details>
+<summary>
+Additional Promise Combinators: race,allSettled,any.
+</summary>
+
+additional combinators, also take an array of promises and return a single promise.
+
+_Promise.race()_ is settled as soon as the first promise is settled. doesn't matter if successfully or not.
+
+```js
+const get3CountriesParRace = async function (c1, c2, c3) {
+  try {
+    const p = await Promise.race([
+      //Promise.reject('always reject'), rejected
+      getAsyncJson(URLS.name + c1),
+      getAsyncJson(URLS.name + c2),
+      getAsyncJson(URLS.name + c3),
+    ]);
+    console.log(...p); // can be one or more.
+  } catch (e) {
+    console.error("race rejects!", e);
+  }
+};
+get3CountriesParRace("germany", "france", "ireland"); // ok
+get3CountriesParRace("germanyDaddy", "france", "ireland"); // might be good, might not
+```
+
+_Promise.allSettled()_ will return the settled promises, will never short circuit. like the _Promise.all()_ but without rejecting.
+
+```js
+const parAllSettled = async function () {
+  try {
+    const p = await Promise.allSettled([
+      Promise.resolve("success"),
+      Promise.reject("always reject"),
+      Promise.resolve("another success"),
+    ]);
+    console.log(p);
+  } catch (e) {
+    console.error("all settled rejects!", e);
+  }
+};
+parAllSettled();
+```
+
+_Promise.any()_ - will return the first successfully settled promise. it will reject only if all promises reject. like _Promise.race()_, but will take the successful promises.
+
+```js
+const parAnySuccess = async function () {
+  try {
+    const p = await Promise.any([
+      Promise.resolve("success"),
+      Promise.reject("always reject"),
+      Promise.resolve("another success"),
+    ]);
+    console.log(p);
+  } catch (e) {
+    console.error("any rejects!", e);
+  }
+};
+const parAnyFails = async function () {
+  try {
+    const p = await Promise.any([Promise.reject("always reject")]);
+    console.log(p);
+  } catch (e) {
+    console.error("any rejects!", e);
+  }
+};
+parAnySuccess();
+parAnyFails();
+```
+
+</details>
+
 #### Coding Challenge #3
 
 <details>
 <summary>
-
+Code challenge, using combinators, promises, etc... mapping with async await. returning values from async.
 </summary>
 
 > Your tasks:
@@ -761,4 +1066,5 @@ Chaining more and more promises together.
 > To test, turn off the 'loadNPause' function.
 
 </details>
-```
+</details>
+</details>
