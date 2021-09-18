@@ -69,3 +69,16 @@ Use starter code to start each section, and **final code to compare it with your
 ### Q14: Do you accept pull requests?
 
 **A:** No, for the simple reason that I want this repository to contain the _exact_ same code that is shown in the videos. However, please feel free to add an issue if you found one.
+
+## Benjamin extras
+
+#### Todo list
+
+- [ ] add umls and diagrams
+  - [ ] Dom and events - 2
+  - [ ] Data structures
+  - [ ] Working with Arrays
+  - [ ] Advance Dom manipulation
+  - [ ] Object Oriented
+- [ ] Mappity: add extra features to the app.
+- [x] Modern JavaScript: create a simple common js example

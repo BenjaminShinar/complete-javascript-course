@@ -26,6 +26,7 @@
     "keydown",
     "keypress",
     "keyup",
+    "mkdir",
     "mouseout",
     "parens",
     "prettierrc",
