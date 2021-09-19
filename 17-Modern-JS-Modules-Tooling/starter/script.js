@@ -10,7 +10,11 @@ import {
 import * as ShoppingCart from './shoppingCart.js'; //import everything into a object.
 import foo from './shoppingCart.js'; //take default export
 
-import cloneDeep from './node_modules/lodash-es/cloneDeep.js';
+//import cloneDeep from './node_modules/lodash-es/cloneDeep.js';
+import cloneDeep from 'lodash-es'; //when using a bundler.
+import _ from 'lodash';
+//import cloneDeep from 'lodash';
+
 function BaseBehavior() {
   const fileDesignation = 'Importing';
   console.log(`${fileDesignation} Module`);
@@ -33,7 +37,7 @@ function BaseBehavior() {
   ShoppingCart.cart.push(7);
   console.log(...ShoppingCart.cart.flat());
 }
-//BaseBehavior();
+BaseBehavior();
 
 function modulePattern() {
   const moduleShoppingCart = (function () {
@@ -69,3 +73,27 @@ const stateClone = Object.assign({}, state);
 const stateDeepClone = cloneDeep(state);
 state.user.loggedIn = false;
 console.log(state, stateClone, stateDeepClone);
+
+console.log(state, stateClone, stateDeepClone);
+
+if (module.hot) {
+  module.hot.accept();
+}
+console.log(Date.now());
+
+class Person {
+  #greeting = 'Hey';
+  constructor(name) {
+    this.name = name;
+    console.log(`${this.#greeting},${this.name}`);
+  }
+}
+
+const jonas = new Person('jonas');
+
+console.log(
+  'more than two',
+  ShoppingCart.cart.find(el => el.quantity >= 2)
+);
+Promise.resolve('TEST').then(x => console.log(x));
+import 'core-js/stable';

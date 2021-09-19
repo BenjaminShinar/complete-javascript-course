@@ -13,6 +13,7 @@
   "cSpell.ignoreWords": [
     "Mappity",
     "Mapty",
+    "Transpiling",
     "afterbegin",
     "afterend",
     "arrow",
@@ -26,6 +27,7 @@
     "keydown",
     "keypress",
     "keyup",
+    "loadsh",
     "mkdir",
     "mouseout",
     "parens",

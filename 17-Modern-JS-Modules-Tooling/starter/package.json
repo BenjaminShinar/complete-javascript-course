@@ -4,12 +4,16 @@
   "description": "modern js",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
   },
   "author": "Benjamin",
   "license": "ISC",
   "dependencies": {
     "leaflet": "^1.7.1",
-    "lodash-es": "^4.17.21"
-  }
+    "lodash-es": "^4.17.21",
+    "parcel": "^2.0.0-rc.0"
+  },
+  "devDependencies": {}
 }
