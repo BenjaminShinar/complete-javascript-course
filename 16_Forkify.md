@@ -303,11 +303,9 @@ if (!id) return;
 
 ### MVC
 
-<!-- <details> -->
+<details>
 <summary>
-
 We now start talking architecture.
-
 </summary>
 
 why do we even need architecture?
@@ -375,6 +373,176 @@ we have two modules (the model and the controller) and the recipeView class. the
 
 #### Refactoring for MVC
 
+<details>
+<summary>
+Splitting into different files, creating methods, thinking about hierarchies and building blocks for the future.
+</summary>
+
+we start by creating the new files. we have controller.js, and we add model.js and we need some views, lets create a folder for them, and start with recipe view.js.
+
+one controller, one model, but several views. we could split up the controller, and the model, but for this scale of project, it's ok.
+
+with start with the model, it's a module by itself. it should have a state that we export and a function to load recipes.
+
+```js
+export const state = {
+  recipe: {},
+};
+
+export const loadRecipe = async function () {};
+```
+
+we refactor our old code that is related to getting the recipes from the server. we need to import those changes into the controller.
+
+```js
+import * as model from "./model.js";
+```
+
+if our model returns a promise, we need to await it, and we shouldn't forget the error handling!
+
+```js
+await model.loadRecipe(id);
+```
+
+we check that everything is ok, and then we move to the view.
+lets start with a new class, we eventually would want a parent class of view.
+we need to decide what to export, rather than export the class itself , we will export default a new recipe;
+
+```js
+class RecipeView {}
+```
+
+but because we create the class in module and export it, we can't pass data to it in the constructor. instead, we create a 'render' method. which is simply the earlier code. we also need to move the icons import
+
+```js
+recipeView.render(model.state.recipe);
+```
+
+we want the render method to eventually move up to the base class, and then override the 'generateMarkup()' method for each subclass. we create some small functions for utility, and we move the render spinner into the view. we will have render and renderSpinner methods on all of our views.
+
+we need to move the import of the icons and fix the path.
+
+a final change is for the number we are working with real quantities, so we want 1 1/2 instead of 1.5.
+we will use an external package for this.
+
+[fractional](https://www.npmjs.com/package/fractional)
+
+```bash
+npm install fractional
+```
+
+this library uses common.js form.
+
+```js
+import { Fraction } from "fractional";
+```
+
+</details>
+
+#### Helpers and Configuration Files
+
+<details>
+<summary>
+files that hold common functionality and constant variables.
+</summary>
+
+helper files and configuration modules.
+we create a new file 'config.js', which are constant and reused across many modules.
+we can put the api URL in there and then import what we need in each file.
+
+```js
+export const API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes`;
+```
+
+we also want a module that are we used all across the project 'helpers.js'. we first have a getJson function.
+we need to think about the error handling, though. (we rethrow the error up the call stack).
+
+we still need an _await_, because we are calling an asynchronous function.
+
+```js
+export const getJSON = async function (url) {
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`${data.message} ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error(`${err} 💥💥`);
+    throw err;
+  }
+};
+```
+
+we also add a timeout for the getJSON call. we make it into a race using _Promise.race([])_.
+
+```js
+const timeout = function (s) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error(`Request took too long! Timeout after ${s} second`));
+    }, s * 1000);
+  });
+};
+
+export const getJSON = async function (url) {
+  try {
+    const res = await Promise.race([fetch(url), timeout(5)]);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`${data.message} ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error(`${err} 💥💥`);
+    throw err;
+  }
+};
+```
+
+the number of seconds for timeout can also go into the config file.
+
+</details>
+
+#### Event Handlers in MVC: Publisher-Subscriber Pattern
+
+<details>
+<summary>
+The publisher-subscriber design pattern, adding event handlers at startup.
+</summary>
+
+listening and handling events in mvc using the publisher subscriber pattern.
+
+we are currently listening for events in the controller. but events that belong to the DOM should be related to the view, right? but the callback function is definably part of the controller, how can we solve this conflict?
+
+> - Events should be **handled** in the **controller** (otherwise we have application logic in the view).
+> - Events should be **listened for** in the **view** (otherwise we would need DOM Elements in the controller).
+
+the publisher-subscriber design pattern is a solution for this. the UI view element is the publisher,and the controller module is the subscriber. the publisher doesn't know that the subscriber exists and how it's implemented. we do this with an 'init' function of the controller.
+
+```js
+//in the view
+addHandlerRender = function (handler) {
+  ["hashchange", "load"].forEach((e) => window.addEventListener(e, handler));
+};
+//in the controller
+const init = function () {
+  recipeView.addHandlerRender(controlRecipes);
+};
+init();
+```
+
+later we will have more handlers.
+
+now we have a good start of a structure for the architecture.
+
+</details>
+
+</details>
+
+### Implementing Error and Success messages
+
 <!-- <details> -->
 <summary>
 
@@ -382,6 +550,6 @@ we have two modules (the model and the controller) and the recipeView class. the
 
 </details>
 
-</details>
+### s
 
 </details>
