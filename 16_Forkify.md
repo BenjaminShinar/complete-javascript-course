@@ -543,6 +543,143 @@ now we have a good start of a structure for the architecture.
 
 ### Implementing Error and Success messages
 
+<details>
+<summary>
+Displaying the error to the user
+</summary>
+rather than just log the  error, we might want to display it in the view.
+
+the correct place to handle the error should be in the view, not the model.
+
+we already have an html element for errors.
+
+```html
+<div class="error">
+  <div>
+    <svg>
+      <use href="src/img/icons.svg#icon-alert-triangle"></use>
+    </svg>
+  </div>
+  <p>No recipes found for your query. Please try again!</p>
+</div>
+```
+
+lets add a renderError function for it.
+
+```js
+  renderError(msg) {
+    const markup = `<div class="error">
+  <div>
+    <svg>
+      <use href="${icons}#icon-alert-triangle"></use>
+    </svg>
+  </div>
+  <p>${msg}</p>
+</div>`;
+    this.#clear();
+    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+```
+
+we think the error should know the displayed message. lets change it to a default value.
+
+lets's also create a render message function, we will use it in the future.
+
+</details>
+
+### Search Functionality
+
+<details>
+<summary>
+adding the search functionality modules: the search box and the results.
+</summary>
+
+we want to allow the user to search for recipes,
+we need to work on the model, the view and the controller.
+
+we start with the api call in the model, let's take a look at the data.
+we need an async function, and we shouldn't forget about awaiting it!
+
+this part in the model.
+
+```js
+export const loadSearchResults = async function (query) {
+  const searchRecipesUrl = `${API_URL}/?search=${query}`;
+  try {
+    const data = await getJSON(searchRecipesUrl);
+    state.searchResults.query = query;
+    state.searchResults.results = data.data.recipes.map((rec) => {
+      return {
+        id: rec.id,
+        title: rec.title,
+        publisher: rec.publisher,
+        image: rec.image_url,
+      };
+    });
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+```
+
+and a corresponding part in the controller,
+
+and we need also views, one for the search box and one for the results.
+
+```js
+class SearchView {
+  //...
+}
+
+export default new SearchView();
+```
+
+we need the query from the html, and add the handler for submit, and we should prevent the default behavior.
+
+```js
+  addHandlerSearch(handler) {
+    this.#parentElement.addEventListener('submit', function (e) {
+      e.preventDefault();
+      handler();
+    });
+  }
+  getQuery() {
+    return this.#parentElement.querySelector('.search__field').value;
+  }
+```
+
+to render the results, we would need a new view for the results, this view is quite similar to the recipe view, so it's time to refactor the common parts into a base class.
+
+but the way JavaScript works, we can't yet use private fields and methods in the base case.
+
+some long session of debugging, but stuff works.
+(parentheses are awful)
+
+let's also add the hot module reloading to make our data persistance while working.
+
+```js
+if (module.hot) {
+  module.hot.accept();
+}
+```
+
+lets display an error if the data is empty
+
+```js
+  render(data) {
+    if (!data || (Array.isArray(data) && data.length === 0))
+      return this.renderError();    this._data = data;
+    this._clear();
+    const markup = this._generateMarkup();
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+```
+
+</details>
+
+### Implementing Pagination
+
 <!-- <details> -->
 <summary>
 
