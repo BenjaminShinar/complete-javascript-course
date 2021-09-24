@@ -24,14 +24,22 @@ class RecipeView extends View {
   addHandlerRender(handler) {
     ['hashchange', 'load'].forEach(e => window.addEventListener(e, handler));
   }
-
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn--update-servings');
+      if (!btn) return;
+      const servings = Number(btn.dataset.updateTo);
+      if (servings > 0) handler(servings);
+    });
+  }
   _generateMarkup() {
+    const { title, servings } = this._data;
     return `<figure class="recipe__fig">
-          <img src="${this._data.image}" alt="${
-      this._data.title
-    }" class="recipe__img" crossorigin/>
+          <img src="${
+            this._data.image
+          }" alt="${title}" class="recipe__img" crossorigin/>
           <h1 class="recipe__title">
-            <span>${this._data.title}</span>
+            <span>${title}</span>
           </h1>
         </figure>
 
@@ -40,28 +48,30 @@ class RecipeView extends View {
             <svg class="recipe__info-icon">
               <use href="${icons}#icon-clock"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--minutes">${
-              this._data.cookingTime
-            }</span>
+            <span class="recipe__info-data recipe__info-data--minutes"> 
+            ${this._data.cookingTime}</span>
             <span class="recipe__info-text">minutes</span>
           </div>
           <div class="recipe__info">
             <svg class="recipe__info-icon">
               <use href="${icons}#icon-users"></use>
             </svg>
-            <span class="recipe__info-data recipe__info-data--people">${
-              this._data.servings
-            }</span>
+            <span class="recipe__info-data recipe__info-data--people"> 
+            ${servings} </span>
             <span class="recipe__info-text">servings</span>
 
             <div class="recipe__info-buttons">
-              <button class="btn--tiny btn--increase-servings">
+              <button data-update-to="${
+                servings - 1
+              }" class="btn--tiny btn--update-servings">
                 <svg>
                   <use href="${icons}#icon-minus-circle"></use>
                 </svg>
               </button>
-              <button class="btn--tiny btn--increase-servings">
-                <svg>
+              <button data-update-to="${
+                servings + 1
+              }" class="btn--tiny btn--update-servings">
+              <svg>
                   <use href="${icons}#icon-plus-circle"></use>
                 </svg>
               </button>
@@ -70,7 +80,7 @@ class RecipeView extends View {
 
           <div class="recipe__user-generated">
             <svg>
-                          </svg>
+            </svg>
           </div>
           <button class="btn--round">
             <svg class="">
@@ -97,11 +107,10 @@ class RecipeView extends View {
             }</span>. Please check out
             directions at their website.
           </p>
-          <a
-            class="btn--small recipe__btn"
+
+          <a class="btn--small recipe__btn"
             href="${this._data.sourceUrl}"
-            target="_blank"
-          >
+            target="_blank">
             <span>Directions</span>
             <svg class="search__icon">
               <use href="${icons}#icon-arrow-right"></use>

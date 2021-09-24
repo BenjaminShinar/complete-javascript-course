@@ -4,9 +4,11 @@ class ResultsView extends View {
   _parentElement = document.querySelector('.results');
   _errorMessage = 'No recipes found for your query!';
 
-  static generateOneResult(result) {
+  static generateOneResult(result, currentId) {
     return `<li class="preview">
-            <a class="preview__link" href="#${result.id}">
+            <a class="preview__link ${
+              result.id === currentId ? 'preview__link--active' : ''
+            }" href="#${result.id}">
               <figure class="preview__fig">
                 <img src="${result.image}" alt="${result.title}" crossorigin />
               </figure>
@@ -18,7 +20,10 @@ class ResultsView extends View {
           </li>`;
   }
   _generateMarkup() {
-    return this._data.map(ResultsView.generateOneResult).join('');
+    const id = window.location.hash.slice(1);
+    return this._data
+      .map(res => ResultsView.generateOneResult(res, id))
+      .join('');
   }
 }
 

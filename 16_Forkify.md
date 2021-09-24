@@ -680,6 +680,253 @@ lets display an error if the data is empty
 
 ### Implementing Pagination
 
+<details>
+<summary>
+creating pagination navigation for results, adding buttons, finding the correct case... 
+</summary>
+
+we currently display all results, but we want to only display them in chunks of ten.
+
+the controller tells the view to render the results.
+
+we start in the model module
+
+```js
+export const getSearchResultsPage = function (page) {
+  const start = (page - 1) * state.searchResults.resultsPerPage;
+  const end = page * state.searchResults.resultsPerPage;
+  return state.searchResults.results.slice(start, end);
+};
+```
+
+and now we pass only what we wanted in the controller.
+
+```js
+const controlSearchResults = async function () {
+  try {
+    const query = searchView.getQuery();
+    if (!query) return; //guard clause
+    ResultsView.renderSpinner();
+    await model.loadSearchResults(query);
+    ResultsView.render(model.getSearchResultsPage(1));
+  } catch (err) {
+    ResultsView.renderError();
+  }
+};
+```
+
+(we needed a refresh)
+we also add the page to the state and use it as a default
+
+now we need the pagination buttons and behavior.
+
+we have different scenarios:
+on page 1 - only show the next button, and don't show if there are no more search results
+other pages - show prev, and next
+last page, only show last page.
+
+lets make new view PaginationView. we set the parent element and create the \_generateMarkup() method.
+scenarios
+
+1. page 1, and there no more results
+2. page 1, and there are more results
+3. page n, there are no more results (last page)
+4. page n, there are more results
+
+we build the logic to add buttons in the view, and the next part is to add the eventHandlers. we use event delegations
+
+```js
+  addHandlerClick(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn--inline');
+      if (!btn) return; //guard
+      handler(btn);
+    });
+  }
+```
+
+we use the dataset attribute on the html button,
+
+```html
+<button data-goto="${page}" class="btn--inline pagination__btn--${direction}">
+  <svg class="search__icon">
+    <use href="${icons}#icon-arrow-${arrow}"></use>
+  </svg>
+  <span>Page ${page}</span></button
+>;
+```
+
+</details>
+
+### Project Planning II
+
+<details>
+<summary>
+Taking a break to see what still needs to be done.
+</summary>
+
+we made some good progress so far, now lets consider the next step.
+
+lets look at the features list, we already completed some of them.
+
+- [x] Search functionality
+- [x] Results with pagination
+- [x] Display recipe
+- [ ] Change servings
+- [ ] Bookmarking
+- [ ] Store and load bookmarks
+- [ ] Create recipes.
+
+let's update the diagram
+
+![architecture-2](18-forkify/starter/forkify-flowchart-part-2.png)
+
+</details>
+
+### Updating Recipes Servings
+
+<details>
+<summary>
+Updating the servings sizes Logic
+</summary>
+
+updating recipes servings.
+
+our outline is the same as before, the controller function will be executed when the user clicks on the model. the control will update the recipe servings and call the render method again. the data is manipulated in the model itself.
+
+```js
+export const updateServings = function (newServings = state.recipe.servings) {
+  const factor = newServings / state.recipe.servings;
+  state.recipe.ingredients.forEach((ing) => {
+    ing.quantity *= factor;
+  });
+  state.recipe.servings = newServings;
+};
+```
+
+now we need to update the handler inside the the recipeView with event delegation
+
+```js
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn--tiny');
+      if (!btn) return;
+      handler(Number(btn.dataset.updateTo));
+    });
+  }
+```
+
+we just need to know where the servings number is coming for. we would like the view to tell us this. we simply add the dataset attribute, just like before. the "data-update-to" is accessed by "dataset.updateTo", the hyphen turns into camelCase.
+
+```html
+<button
+  data-update-to="${this._data.servings + 1}"
+  class="btn--tiny btn--update-servings"
+>
+  <svg>
+    <use href="${icons}#icon-plus-circle"></use>
+  </svg>
+</button>
+```
+
+we need to control the zero servings case. we do this in the view.
+
+now we just need to take care of the flickering image. the problem is probably that each update needs to render everything, so our next step is only to render changes.
+
+</details>
+
+### Developing a DOM Updating Algorithm
+
+<details>
+<summary>
+An algorithm to only update the parts that changed rather than the entire DOM.
+</summary>
+
+only update the dom where it changes. don't reload the entire view. we want to avoid unnecessary work, let's have a new method in the view base class.
+we will generate the same markup, but instead of rendering all of it, we will compare it to the existing markup and simple update what's needed
+
+```js
+update(data) {
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    return this.renderError();
+  }
+  this._data = data;
+  //this._clear();
+  const markup = this._generateMarkup();
+  const newDOM = document.createRange().createContextualFragment(markup);
+  const newElements = Array.from(newDOM.querySelectorAll('*'));
+  const currentElements = Array.from(this._parentElement.querySelectorAll('*'));
+  console.log(currentElements, newElements);
+  newElements.forEach((newEl,i)=>
+  {
+    const currentElement = currentElements[i];
+    console.log(currentElement,newEl.isEqualNode(currentElement));
+  });
+}
+```
+
+we use the newly created DOM as a virtual dom (like the document itself).
+
+we take all the elements from the virtual DOM and from the real DOM element and compare them with the _.isEqualNode()_ method. this almost works, but not quite.
+
+```js
+newElements.forEach((newElement, i) => {
+  const currentElement = currentElements[i];
+  if (!newElement.isEqualNode(currentElement))
+    currentElement.textContent = newElement.textContent;
+});
+```
+
+we need a different way to do this, we want to only replace text. for this we use _.nodeValue_
+which is null for elements, and has value for text nodes.
+
+```js
+newElements.forEach((newElement, i) => {
+  const currentElement = currentElements[i];
+  //update changed TEXT
+  if (
+    !newElement.isEqualNode(currentElement) &&
+    newElement.firstChild?.nodeValue.trim() !== ""
+  ) {
+    console.log(newElement.firstChild.nodeValue);
+    currentElement.textContent = newElement.textContent;
+  }
+  //update changed ATTRIBUTES
+  if (!newElement.isEqualNode(currentElement)) {
+    console.log(newElement.attributes);
+    Array.from(newElement.attributes).forEach((attr) => {
+      console.log(attr.name, attr.value);
+      currentElement.setAttribute(attr.name, attr.value);
+    });
+  }
+  //Update Changed Attributes
+});
+```
+
+we change both the text value and the attributes.
+
+let's also use this new functionality to only marked the selected search result. when we click a recipe, we want to keep the result preview highlighted.
+
+let's start with the results view.
+we add the class 'preview\_\_link--active' if we need it.
+
+we remove the array check from the update method.
+
+```js
+  update(data) {
+    if (!data
+    //|| (Array.isArray(data) && data.length === 0)
+    ) {
+      return this.renderError();
+    }
+//...
+  }
+```
+
+</details>
+
+### Implementing Bookmarks
+
 <!-- <details> -->
 <summary>
 

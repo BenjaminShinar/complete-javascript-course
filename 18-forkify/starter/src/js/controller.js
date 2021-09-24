@@ -1,7 +1,8 @@
 import * as model from './model.js';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
-import ResultsView from './views/resultsView';
+import resultsView from './views/resultsView';
+import paginationView from './views/paginationView';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -21,6 +22,8 @@ const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
     if (!id) return; //guard clause
+    //update results view to mark Selected search results
+    resultsView.update(model.getSearchResultsPage());
     recipeView.renderSpinner();
     await model.loadRecipe(id);
     recipeView.render(model.state.recipe);
@@ -33,16 +36,29 @@ const controlSearchResults = async function () {
   try {
     const query = searchView.getQuery();
     if (!query) return; //guard clause
-    ResultsView.renderSpinner();
+    resultsView.renderSpinner();
     await model.loadSearchResults(query);
-    ResultsView.render(model.state.searchResults.results);
+    resultsView.render(model.getSearchResultsPage());
+    paginationView.render(model.state.searchResults);
   } catch (err) {
-    ResultsView.renderError();
+    resultsView.renderError();
   }
 };
-
+const controlPagination = function (gotoPage) {
+  resultsView.render(model.getSearchResultsPage(gotoPage));
+  paginationView.render(model.state.searchResults);
+};
+const controlServings = function (newServing) {
+  //update the underlining data
+  model.updateServings(newServing);
+  //update the view
+  //recipeView.render(model.state.recipe);
+  recipeView.update(model.state.recipe);
+};
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
+  recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults);
+  paginationView.addHandlerClick(controlPagination);
 };
 init();
