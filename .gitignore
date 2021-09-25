@@ -106,3 +106,6 @@ dist
 
 # avoid pdfs for now
 *.pdf
+
+#secretAPIKey
+.secretConfig.js

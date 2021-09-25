@@ -927,13 +927,271 @@ we remove the array check from the update method.
 
 ### Implementing Bookmarks
 
+<details>
+<summary>
+Getting bookmarks on the recipes.
+</summary>
+
+we want our recipes to contain a bookmark.
+
+we have a leftover bug, when we search from page 2 we don't go back to page 0.
+
+let's try to find the bug.
+
+I think it has something to do with the default argument to `model.getSearchResultsPage()`
+
+but back to bookmarking,we start in the model. and then in the controller. and we also update the model.
+we also want to listen for clicks on that button element, we add event delegation as before.
+
+we need to call the update method. we just render a single element that changed.
+
+the next step is to make the bookmarks permanents. so instead, lets store the bookmarked recipes.
+
+```js
+export const loadRecipe = async function (id) {
+  const testRecipeUrl = `${API_URL}/${id}`;
+  try {
+    const data = await getJSON(testRecipeUrl);
+    const { recipe: recipeData } = data.data;
+    state.recipe = {
+      id: recipeData.id,
+      title: recipeData.title,
+      publisher: recipeData.publisher,
+      sourceUrl: recipeData.source_url,
+      image: recipeData.image_url,
+      servings: recipeData.servings,
+      cookingTime: recipeData.cooking_time,
+      ingredients: recipeData.ingredients,
+      bookmarked: state.bookmarks.some((bk) => bk.id === recipeData.id),
+    };
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+```
+
+let's actually stick this in the search results function as well.
+
+(not sure why we aren't using a set)
+
+now we add the bookmarks panel.
+
+it also has a preview element.
+let's create the new view, bookmarksView.js
+
+we mostly use the same as the search result stuff.
+
+```js
+class BookmarksView extends View {
+  _parentElement = document.querySelector(".bookmarks__list");
+  _errorMessage = "No bookmarks yet. Find a nice recipe and book mark it ;)";
+  //...
+}
+```
+
+now we just make a common view that both use (composition, not inheritance) previewView.js.
+
+</details>
+
+### Storing with Local Storage
+
+<details>
+<summary>
+Making data bookmarks persistance in local storage.
+</summary>
+
+storing data is about data, so it belongs to the model.
+
+we store to the local storage when a bookmark is added or removed.
+
+```js
+const persistBookmarks = function () {
+  localStorage.setItem("bookmarks", JSON.stringify(state.bookmarks));
+};
+
+const clearBookmarksFromLocalStorage = function () {
+  localStorage.removeItem("bookmarks");
+};
+
+const loadBookMarks = function () {
+  const storedText = localStorage.getItem("bookmarks");
+  const storedBookmarks = JSON.parse(storedText);
+  if (storedBookmarks) {
+    state.bookmarks = storedBookmarks;
+  }
+};
+loadBookMarks(); //to call this on startup
+```
+
+we have an issue that we try to update the bookmarks view before rendering it once.
+
+we stick a debugger statement
+
+```js
+debugger;
+```
+
+</details>
+
+### Project Planning III
+
+<details>
+<summary>
+Adding more and more stuff.
+</summary>
+
+we made some great progress since before.
+
+lets look at the features list, we already completed most of them. now we have one feature group left- creating our own recipes!
+
+- [x] Search functionality
+- [x] Results with pagination
+- [x] Display recipe
+- [x] Change servings
+- [x] Bookmarking
+- [x] Store and load bookmarks
+- [ ] Own recipe upload
+- [ ] Own recipes automatically bookmarked
+- [ ] user can only see own recipes, not from others.
+
+let's update the diagram
+
+![architecture-3](18-forkify/starter/forkify-flowchart-part-3.png)
+
+</details>
+
+### Uploading a New Recipe
+
 <!-- <details> -->
 <summary>
 
 </summary>
+
+for this, we need a developer key for the api.
+
+we start with opening the editor.
+we want to open the form and close it. let's call it addRecipeView.js;
+
+this is not like other views, because the form is already part of the html.
+
+```html
+<div class="overlay hidden"></div>
+<div class="add-recipe-window hidden">
+  <button class="btn--close-modal">&times;</button>
+  <form class="upload">
+    <!-- more stuff -->
+  </form>
+</div>
+```
+
+this class has much more stuff.
+
+```js
+class AddRecipeView extends View {
+  _parentElement = document.querySelector(".upload");
+  _window = document.querySelector(".add-recipe-window");
+  _overlay = document.querySelector(".overlay");
+  _btnOpen = document.querySelector(".nav__btn--add-recipe");
+  _btnClose = document.querySelector(".btn--close-modal");
+  _generateMarkup() {}
+}
+```
+
+we use the constructor this time. we shouldn't forget to properly bind stuff.
+
+```js
+ constructor() {
+    super();
+    this._addHandlerShowWindow();
+  }
+  _addHandlerShowWindow() {
+    this._btnOpen.addEventListener('click', this._toggleView.bind(this));
+  }
+  _toggleView() {
+    this._overlay.classList.toggle('hidden');
+    this._window.classList.toggle('hidden');
+  }
+```
+
+to get all the data we can use 'FormData' object
+
+```js
+  addHandlerUpload(handler) {
+    this._parentElement.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const data = [...new FormData(this)];
+      console.log(data);
+    });
+  }
+```
+
+the action to upload the data is an api call, so it should happen in the model. so we first pass a handler function from the controller.
+
+since ES19, we can convert an array into an Object with _Object.fromEntires(array)_, which is like the inverse of getting the entries.
+
+```js
+const o = Object.fromEntries(dataArr);
+```
+
+the next part is to upload the new recipe, this should happen in the model.
+
+```js
+export const uploadRecipe = async function (newRecipe) {};
+```
+
+first thing to do is the convert the object into the same format we get from the API
+
+a long tedious battle to format it.
+
+now we need a method to send json data.
+
+the fetch function can also send data!
+
+```js
+const fetchPromise = fetch(url, {
+  method: "Post",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(data),
+});
+```
+
+the rest of the function is the same.
+now we need the API key.
+
+(i stored it in a file called .secretConfig, probably not the best way to secure it...)
+
+we need the url to be a bit longer, lets change them in the html.
+and this worked! we see some actual data, with our key and the id.
+
+we do some more work of getting the data back to the format we want.
+
+there is a trick here using short circuiting and spreading
+
+```js
+const createRecipeObject = function (data) {
+  const { recipe } = data.data;
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+    ...(recipe.key && { key: recipe.key }),
+  };
+};
+```
+
+things still don't work perfectly.
 
 </details>
 
 ### s
 
 </details>
+````
