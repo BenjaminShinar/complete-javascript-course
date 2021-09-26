@@ -1,6 +1,6 @@
 import { async } from 'regenerator-runtime';
 import { API_URL, RESULTS_PER_PAGE, LOCAL_STORAGE_NAME } from './config';
-import { getJSON, sendJSON } from './helpers';
+import { AJAX } from './helpers';
 import { API_KEY } from './.secretConfig';
 
 export const state = {
@@ -29,9 +29,9 @@ const createRecipeObject = function (data) {
   };
 };
 export const loadRecipe = async function (id) {
-  const testRecipeUrl = `${API_URL}/${id}`;
+  const testRecipeUrl = `${API_URL}/${id}?key=${API_KEY}`;
   try {
-    const data = await getJSON(testRecipeUrl);
+    const data = await AJAX(testRecipeUrl);
     state.recipe = createRecipeObject(data);
     state.recipe.bookmarked = state.bookmarks.some(
       bk => bk.id === data.data.recipe.id
@@ -75,8 +75,12 @@ export const uploadRecipe = async function (newRecipe) {
     };
     //console.log(formattedRecipe);
     const postRecipesUrl = `${API_URL}?key=${API_KEY}`;
-    const data = await sendJSON(postRecipesUrl, formattedRecipe);
+    const data = await AJAX(postRecipesUrl, formattedRecipe);
     state.recipe = createRecipeObject(data);
+    state.recipe.bookmarked = state.bookmarks.some(
+      bk => bk.id === data.data.recipe.id
+    );
+
     addBookmark(state.recipe);
   } catch (err) {
     throw err;
@@ -85,9 +89,9 @@ export const uploadRecipe = async function (newRecipe) {
 
 export const loadSearchResults = async function (query) {
   console.log('searching for ', query);
-  const searchRecipesUrl = `${API_URL}/?search=${query}`;
+  const searchRecipesUrl = `${API_URL}/?search=${query}&key=${API_KEY}`;
   try {
-    const data = await getJSON(searchRecipesUrl);
+    const data = await AJAX(searchRecipesUrl);
     state.searchResults.query = query;
     state.searchResults.results = data.data.recipes.map(rec => {
       return {
@@ -95,6 +99,7 @@ export const loadSearchResults = async function (query) {
         title: rec.title,
         publisher: rec.publisher,
         image: rec.image_url,
+        ...(rec.key && { key: rec.key }),
         bookmarked: state.bookmarks.some(bk => bk.id === rec.id),
       };
     });

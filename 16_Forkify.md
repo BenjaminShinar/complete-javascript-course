@@ -1,6 +1,10 @@
+<!--
+//cspell::ignore forkify
+ -->
+
 ## Forkify App: Building a Modern Application
 
-<!-- <details> -->
+<details>
 
 <summary>
 The final project of the course, bringing everything together.
@@ -1063,9 +1067,9 @@ let's update the diagram
 
 ### Uploading a New Recipe
 
-<!-- <details> -->
+<details>
 <summary>
-
+Uploading a recipe.
 </summary>
 
 for this, we need a developer key for the api.
@@ -1188,10 +1192,82 @@ const createRecipeObject = function (data) {
 ```
 
 things still don't work perfectly.
+it was a problem with the bookmarks. it was updated and not rendered.
+
+the recipe was uploaded, but the url didn't change, we change the id with the history api to change the url without reloading the page
+
+```js
+window.history.pushState(null,null,`#${model.state.recipe.id})
+```
+
+the next step is to refactor the two json methods into one.
+
+```js
+export const AJAX = async function (url, payload = undefined) {
+  try {
+    const fetchPromise = payload
+      ? fetch(url, {
+          method: "Post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+      : fetch(url);
+    const res = await Promise.race([fetchPromise, timeout(TIMEOUT_SECONDS)]);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`${data.message} ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    console.error(`${err} 💥💥`);
+    throw err;
+  }
+};
+```
+
+now we use the key to mark it as our own. we pass the key in all the calls to return our recipes.
+we look at the recipeView and the previewView.
+we need to add the key to preview data structure.
+
+[unsplash-images to use](unsplash.com)
 
 </details>
 
-### s
+### Writing Documentation
+
+<details>
+<summary>
+writing documentations for our application. additional challenges.
+</summary>
+
+we use [JSDoc](https://jsdoc.app/)
+
+we write a block comment with an additional astrict to get the jsdoc created. this creates the @parameters and some space to write
+
+```js
+/**
+ * Render the received data to the DOM
+ * @param {Object | Object[]} data the data to be render
+ * @param {boolean} [render=true] if false, just return markup string instead of rendering to the DOM
+ * @returns {undefined | string} a string is return if render is false
+ */
+```
+
+we can also define the this keyword (what it should refer to), who wrote the function, and what's missing.
+
+```js
+/**
+@this {Object} View Instance
+@author Benjamin
+@todo Finish implementing
+*/
+```
+
+we have some possible features that we can add.
+
+in the next section. we will deploy this project.
 
 </details>
-````
+</details>

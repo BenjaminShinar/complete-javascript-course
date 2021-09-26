@@ -1,6 +1,5 @@
 {
   "cSpell.words": [
-    "asynchorunse",
     "combinator",
     "Combinators",
     "Geolocation",
@@ -18,14 +17,12 @@
     "Transpiling",
     "afterbegin",
     "afterend",
-    "arrow",
     "bankist",
     "beforebegin",
     "beforeend",
     "crossorigin",
     "ecmascript",
     "eurowings",
-    "forkify",
     "iife",
     "imgs",
     "keydown",
@@ -38,7 +35,6 @@
     "prettierrc",
     "proto",
     "puml",
-    "smblock",
     "unobserve"
   ]
 }

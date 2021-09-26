@@ -30,7 +30,7 @@ const controlRecipes = async function () {
     recipeView.renderSpinner();
     await model.loadRecipe(id);
     recipeView.render(model.state.recipe);
-    bookmarksView.update(model.state.bookmarks);
+    bookmarksView.render(model.state.bookmarks);
   } catch (err) {
     recipeView.renderError();
   }
@@ -41,10 +41,11 @@ const controlUploadRecipe = async function (newRecipe) {
     await model.uploadRecipe(newRecipe);
     recipeView.render(model.state.recipe);
     addRecipeView.renderMessage();
+    bookmarksView.render(model.state.bookmarks); //not update!
+    window.history.pushState(null, null, `#${model.state.recipe.id}`);
     setTimeout(function () {
       addRecipeView.toggleView();
     }, MODAL_CLOSE_TIMEOUT * 1000);
-    //bookmarksView.update(model.state.bookmarks);
   } catch (err) {
     addRecipeView.renderError(err);
   }

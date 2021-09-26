@@ -80,5 +80,14 @@ Use starter code to start each section, and **final code to compare it with your
   - [ ] Working with Arrays
   - [ ] Advance Dom manipulation
   - [ ] Object Oriented
-- [ ] Mappity: add extra features to the app.
-- [x] Modern JavaScript: create a simple common js example
+- [ ] **Mappity:** add extra features to the app.
+- [x] **Modern JavaScript**: create a simple common js example
+- [ ] **Forkify**: add extra features
+  - [ ] fix the upload form so it works without refreshing
+  - [ ] display the number of pages between the two pagination buttons.
+  - [ ] ability to sort search result by duration or number of ingredients (not possible yet, the api isn't ready)
+  - [ ] perform the validation of the ingredients while in the view, not by calling the post api
+  - [ ] improve the ingredients in the form, make sub fields.
+  - [ ] medium: shopping list feature, add all ingredients to a list.
+  - [ ] hard: weekly meal planning feature: assign recipes to the next 7 days and show on a weekly calender.
+  - [ ] get nutrition data of each ingredients via [spoonacular](https://spoonacular.com/food-api) api and calculate the total calories of the recipe.
