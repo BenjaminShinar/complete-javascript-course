@@ -1,3 +1,7 @@
+<!--
+//cspell::ignore geocode latlng
+ -->
+
 ## Mapty App: OOP, Geolocation, External Libraries
 
 <details>

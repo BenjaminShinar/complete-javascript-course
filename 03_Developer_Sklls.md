@@ -1,6 +1,10 @@
+<!--
+//cspell::ignore smblock
+ -->
+
 ## Developer Skills
 
-<!-- <details> -->
+<details>
 <summary>
 Setting an coding environment, using debugger tools, the Node.Js runtime environment.
 </summary>
@@ -23,14 +27,14 @@ we can configure the prettier format by creating a ".prettierrc" file and changi
 }
 ```
 
-we can also have our own custom code snippets. we can define them for either global or per file. we can force snippets with **ctrl + space**
+we can also have our own custom code snippets. we can define them for either global or per file. we can force snippets with **<kbd>ctrl</kbd> + <kbd>space</kbd>**
 
 > preferences -> user snippets.
 > choose whatever file.
 
 for example, here is the standard console log snippet
 
-```
+```json
   "Print to console": {
     "scope": "javascript,typescript",
     "prefix": "cl",
@@ -41,7 +45,7 @@ for example, here is the standard console log snippet
 
 and a markdown snippet (in a different file)
 
-```
+```json
 	"Markdown Summary Section": {
     "prefix": "smblock",
     "body": [
@@ -107,12 +111,72 @@ How to learn to code. What to do and what to avoid.
 
 </details>
 
-### Thinking like a developer becoming a problem solver
+### Thinking like a Developer Becoming a Problem Solver
 
-### Using recourses
+<details>
+<summary>
+Thinking like a developer.
+</summary>
+
+four step protocol to solve problems
+
+> 1. Make sure you 100% understand the problem. **Ask the right questions** to get a clear picture of the problem.
+> 2. **Divide and conquer**: break a big problem into smaller sub problems.
+> 3. Don't be afraid to do as much **research** as you have to.
+> 4. For bigger problems, **write pseudo-code** before writing the actual code.
+
+</details>
+
+### Using Resources
+
+<details>
+<summary>
+Use google, MDN and stack overflow.
+</summary>
+code example of 'calculating temperature amplitude' following the 4 points process.
+</details>
 
 ### Debugging
 
+<details>
+<summary>
+Finding and fixing bugs.
+</summary>
+
+> - "**Software bug**: Defect or problem in a computer program, basically, any unexpected or unintended behavior, of a computer program is a software bug"
+> - Bugs are **completely normal** in software development.
+
+we can discover them at any stage, during development, in testing, or even from production.
+
+in complex code, we need to use the debugger.
+
+we can set breakpoints and look at the code from the 'sources' tab.
+
+we can push a 'debugger' statement in the code which is like a breakpoint.
+
 #### Code Challenge 1
 
-<!-- </details> -->
+<details>
+<summary>
+print an array transformed.
+</summary>
+
+> Given an array of forecasted maximum temperatures, the thermometer displays a string with the given temperatures.\
+> Example: [17, 21, 23] will print "... 17ºC in 1
+> days ... 21ºC in 2 days ... 23ºC in 3 days ..."
+>
+> Your tasks:
+>
+> 1. Create a function 'printForecast' which takes in an array 'arr' and logs a
+>    string like the above to the console. Try it with both test datasets.
+> 2. Use the problem-solving framework: Understand the problem and break it up into sub-problems!
+>
+> Test data:
+>
+> - Data 1: [17, 21, 23]
+> - Data 2: [12, 5, -5, 0, 4]
+>   GOOD LUCK.
+
+</details>
+</details>
+</details>
