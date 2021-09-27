@@ -74,7 +74,7 @@ Use starter code to start each section, and **final code to compare it with your
 
 #### Todo list
 
-- [ ] add umls and diagrams
+- [ ] add UML and diagrams
   - [ ] Dom and events - 2
   - [ ] Data structures
   - [ ] Working with Arrays
@@ -83,8 +83,8 @@ Use starter code to start each section, and **final code to compare it with your
 - [ ] **Mappity:** add extra features to the app.
 - [x] **Modern JavaScript**: create a simple common js example
 - [ ] **Forkify**: add extra features
-  - [ ] fix the upload form so it works without refreshing
-  - [ ] display the number of pages between the two pagination buttons.
+  - [x] ~~fix the upload form so it works without refreshing~~ - mostly works fine now.
+  - [x] display the number of pages between the two pagination buttons.
   - [ ] ability to sort search result by duration or number of ingredients (not possible yet, the api isn't ready)
   - [ ] perform the validation of the ingredients while in the view, not by calling the post api
   - [ ] improve the ingredients in the form, make sub fields.

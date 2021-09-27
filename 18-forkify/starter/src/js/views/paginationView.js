@@ -15,23 +15,38 @@ class PaginationView extends View {
           </button>
           `;
   }
+  static generatePageLocation(currentPage, totalPages) {
+    return `<span>(${currentPage}/${totalPages})
+    </span>`;
+  }
 
   _generateMarkup() {
     const numPages = Math.ceil(
       this._data.results.length / this._data.resultsPerPage
     );
+    if (numPages === 0) return '';
     const currentPage = this._data.activePage;
+
+    const pageNumberFrom = PaginationView.generatePageLocation(
+      currentPage,
+      numPages
+    );
     if (currentPage === 1 && numPages > 1) {
-      return PaginationView.generateOneButton(currentPage, true);
+      return `${PaginationView.generateOneButton(
+        currentPage,
+        true
+      )} ${pageNumberFrom}`;
     }
     if (currentPage === numPages && numPages > 1) {
-      return PaginationView.generateOneButton(currentPage, false);
+      return `${pageNumberFrom}
+            ${PaginationView.generateOneButton(currentPage, false)}`;
     }
     if (currentPage < numPages) {
       return `${PaginationView.generateOneButton(
         currentPage,
         true
-      )} ${PaginationView.generateOneButton(currentPage, false)}`;
+      )}${pageNumberFrom}
+       ${PaginationView.generateOneButton(currentPage, false)}`;
     }
     if (currentPage === numPages && numPages === 1) {
       return '';
