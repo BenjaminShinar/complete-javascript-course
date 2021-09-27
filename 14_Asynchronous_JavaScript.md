@@ -1,3 +1,7 @@
+<!--
+//cspell::ignore promisified promisifing mapity neighbour geocode
+ -->
+
 ## Asynchronous JavaScript: Promises, Async/Await, and AJAX
 
 <details>
@@ -591,7 +595,7 @@ const lotteryPromise = new Promise(function (resolve, reject) {
 lotteryPromise.then((x) => console.log(x)).catch((err) => console.error(err));
 ```
 
-if we want to make this asynchorunse, we need to add a timeout,
+if we want to make this asynchronous, we need to add a timeout,
 
 ```js
 function ourOwnPromise() {
@@ -671,7 +675,7 @@ Promise.resolve("abc");
 Promise.reject("dsa");
 ```
 
-#### Promisifying the Geo-location API
+#### Promisifing the Geo-location API
 
 <details>
 <summary>
